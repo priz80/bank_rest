@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/service/CustomUserDetailsService.java
 package com.example.bankcards.service;
 
 import com.example.bankcards.entity.User;
