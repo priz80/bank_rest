@@ -2,6 +2,8 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.dto.CreateCardRequest;
+import com.example.bankcards.dto.GenerateCardRequest;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.security.UserDetailsImpl;
 import com.example.bankcards.service.CardService;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,21 +31,54 @@ public class CardController {
         this.cardService = cardService;
     }
 
+    // ✅ Основной эндпоинт: генерация новой карты (авто)
+    @PostMapping
+    @Operation(summary = "Создать новую карту (автогенерация номера, CVV, срока)")
+    public ResponseEntity<CardDto> generateCard(
+            @RequestBody(required = false) GenerateCardRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        User currentUser = userDetails.getUser();
+        Long targetUserId;
+
+        if (request != null && request.getUserId() != null) {
+            if (!currentUser.getRole().equals(Role.ADMIN)) {
+                throw new AccessDeniedException("Только администратор может создавать карты для других пользователей");
+            }
+            targetUserId = request.getUserId();
+        } else {
+            targetUserId = currentUser.getId();
+        }
+
+        CardDto cardDto = cardService.createCardForUser(targetUserId);
+        return ResponseEntity.ok(cardDto);
+    }
+
+    // ✅ Эндпоинт: импорт карты вручную
+    // В CardController
+    @PostMapping("/manual")
+    public ResponseEntity<CardDto> createCardManually(
+            @RequestBody @Valid CreateCardRequest request,
+            @RequestParam Long userId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        if (!userDetails.getUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("...");
+        }
+
+        CardDto dto = cardService.createCardManually(request, userId);
+        return ResponseEntity.ok(dto);
+    }
+
     /**
      * Получение своих карт (с пагинацией и сортировкой)
      */
     @GetMapping
     @Operation(summary = "Получить свои карты")
     public ResponseEntity<Page<CardDto>> getUserCards(
-            @Parameter(description = "Номер страницы", example = "0")
-            @RequestParam(name = "page", defaultValue = "0") Integer page,
-
-            @Parameter(description = "Размер страницы", example = "10")
-            @RequestParam(name = "size", defaultValue = "10") Integer size,
-
-            @Parameter(description = "Сортировка: поле,направление, например id,asc", example = "id,asc")
-            @RequestParam(name = "sort", defaultValue = "id,asc") String sort,
-
+            @Parameter(description = "Номер страницы", example = "0") @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @Parameter(description = "Размер страницы", example = "10") @RequestParam(name = "size", defaultValue = "10") Integer size,
+            @Parameter(description = "Сортировка: поле,направление", example = "id,asc") @RequestParam(name = "sort", defaultValue = "id,asc") String sort,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         Sort.Order order = parseSort(sort);
@@ -51,20 +87,6 @@ public class CardController {
         User user = userDetails.getUser();
         Page<CardDto> cards = cardService.getCardsByUser(user, pageable);
         return ResponseEntity.ok(cards);
-    }
-
-    /**
-     * Создание новой карты
-     */
-    @PostMapping
-    @Operation(summary = "Создать новую карту")
-    public ResponseEntity<CardDto> createCard(
-            @Valid @RequestBody CreateCardRequest request,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-        User user = userDetails.getUser();
-        CardDto card = cardService.createCard(request, user);
-        return ResponseEntity.ok(card);
     }
 
     /**
