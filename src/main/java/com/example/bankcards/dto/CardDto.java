@@ -11,6 +11,7 @@ import lombok.Data;
 public class CardDto {
     private Long id;
     private String maskedCardNumber;
+    private String cardHolderName;
     private String ownerName;
 
     @JsonFormat(pattern = "yyyy-MM")
