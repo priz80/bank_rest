@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/dto/TransferRequest.java
 package com.example.bankcards.dto;
 
 import java.math.BigDecimal;
