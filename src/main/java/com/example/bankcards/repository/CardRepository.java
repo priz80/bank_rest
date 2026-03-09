@@ -16,7 +16,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     Page<Card> findByUser(User user, Pageable pageable);
 
-    // Защита от IDOR
     Optional<Card> findByIdAndUser(Long id, User user);
 
     Optional<Card> findByCardNumber(String cardNumber);
