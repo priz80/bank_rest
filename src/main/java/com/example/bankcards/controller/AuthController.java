@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/controller/AuthController.java
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.AuthRequest;
