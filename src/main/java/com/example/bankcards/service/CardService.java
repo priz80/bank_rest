@@ -1,7 +1,6 @@
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.CardDto;
-import com.example.bankcards.dto.CreateCardRequest;
 import com.example.bankcards.entity.*;
 import com.example.bankcards.exception.CardException;
 import com.example.bankcards.exception.UserException;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -33,15 +31,15 @@ public class CardService {
 
     private final CardGenerator cardGenerator;
 
-public CardService(CardRepository cardRepository,
-                   UserRepository userRepository,
-                   CardUtil cardUtil,
-                   CardGenerator cardGenerator) {
-    this.cardRepository = cardRepository;
-    this.userRepository = userRepository;
-    this.cardUtil = cardUtil;
-    this.cardGenerator = cardGenerator;
-}
+    public CardService(CardRepository cardRepository,
+            UserRepository userRepository,
+            CardUtil cardUtil,
+            CardGenerator cardGenerator) {
+        this.cardRepository = cardRepository;
+        this.userRepository = userRepository;
+        this.cardUtil = cardUtil;
+        this.cardGenerator = cardGenerator;
+    }
 
     // ✅ Создать карту с генерацией (для админа или пользователя)
     public CardDto createCardForUser(Long userId) {
@@ -49,40 +47,16 @@ public CardService(CardRepository cardRepository,
                 .orElseThrow(() -> new UserException("Пользователь не найден"));
 
         if (user.getStatus() != User.Status.ACTIVE) {
-            throw new CardException("Нельзя создать карту для пользователя со статусом: " + user.getStatus());
+            throw new CardException("Нельзя создать карту для неактивного пользователя");
         }
 
         Card card = new Card();
         card.setCardNumber(cardGenerator.generateCardNumber());
         card.setCvv(cardGenerator.generateCvv());
         card.setExpiryDate(cardGenerator.calculateExpiryDate());
+        card.setCardHolderName(user.getUsername().toUpperCase());
+        card.setStatus(CardStatus.ACTIVE);
         card.setBalance(BigDecimal.ZERO);
-        card.setStatus(CardStatus.ACTIVE);
-        card.setUser(user);
-
-        Card saved = cardRepository.save(card);
-        return toDto(saved);
-    }
-
-    // ✅ Создать карту вручную (только для админа)
-    public CardDto createCardManually(CreateCardRequest request, Long userId) {
-        if (cardRepository.findByCardNumber(request.getCardNumber()).isPresent()) {
-            throw new CardException("Карта с таким номером уже существует");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException("Пользователь не найден"));
-
-        if (user.getStatus() != User.Status.ACTIVE) {
-            throw new CardException("Нельзя создать карту для пользователя со статусом: " + user.getStatus());
-        }
-
-        Card card = new Card();
-        card.setCardNumber(cardGenerator.generateCardNumber());
-        card.setCardHolderName(request.getCardHolderName());
-        card.setExpiryDate(LocalDate.parse(request.getExpiryDate() + "-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        card.setBalance(request.getBalance());
-        card.setStatus(CardStatus.ACTIVE);
         card.setUser(user);
 
         Card saved = cardRepository.save(card);
@@ -92,8 +66,8 @@ public CardService(CardRepository cardRepository,
     // ✅ Получение своих карт (USER) или всех (ADMIN)
     public Page<CardDto> getCardsByUser(User user, Pageable pageable) {
         Page<Card> cards = Role.ADMIN.equals(user.getRole())
-                ? cardRepository.findAll(pageable)           // Админ — все карты
-                : cardRepository.findByUser(user, pageable); // USER — только свои
+                ? cardRepository.findAll(pageable)
+                : cardRepository.findByUser(user, pageable);
         return cards.map(this::toDto);
     }
 
@@ -191,8 +165,12 @@ public CardService(CardRepository cardRepository,
         CardDto dto = new CardDto();
         dto.setId(card.getId());
         dto.setMaskedCardNumber(cardUtil.mask(card.getCardNumber()));
-        dto.setCardHolderName(card.getCardHolderName()); // унифицировано
-        dto.setExpiryDate(cardGenerator.calculateExpiryDate() != null ? YearMonth.from(card.getExpiryDate()) : null);
+        dto.setCardHolderName(card.getCardHolderName());
+
+        // ✅ Исправлено: проверяем card.getExpiryDate(), а не
+        // cardGenerator.calculateExpiryDate()
+        dto.setExpiryDate(card.getExpiryDate() != null ? YearMonth.from(card.getExpiryDate()) : null);
+
         dto.setStatus(card.getStatus());
         dto.setBalance(card.getBalance());
         dto.setUserId(card.getUser().getId());
