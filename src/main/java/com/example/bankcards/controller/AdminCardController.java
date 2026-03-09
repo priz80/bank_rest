@@ -50,7 +50,9 @@ public class AdminCardController {
         Sort.Order order = parseSort(sort);
         PageRequest pageable = PageRequest.of(page, size, Sort.by(order));
 
-        Page<CardDto> cards = cardService.getAllCards(pageable);
+        // ✅ Используем существующий метод
+        Page<CardDto> cards = cardService.getCardsByUser(user, pageable);
+
         return ResponseEntity.ok(cards);
     }
 
