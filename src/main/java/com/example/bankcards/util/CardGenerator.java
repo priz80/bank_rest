@@ -36,6 +36,6 @@ public class CardGenerator {
      * Генерирует дату окончания (через 4 года, 1-е число месяца)
      */
     public LocalDate calculateExpiryDate() {
-        return LocalDate.now().plusYears(4).withDayOfMonth(1);
+        return LocalDate.now().plusYears(5).withDayOfMonth(1);
     }
 }
