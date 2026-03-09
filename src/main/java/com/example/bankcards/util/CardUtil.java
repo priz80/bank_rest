@@ -16,9 +16,8 @@ public class CardUtil {
     private SecretKey key;
 
     public CardUtil(@Value("${jwt.secret}") String secret) {
-        // Используем часть JWT-секрета для AES (256 бит)
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        byte[] truncatedKey = new byte[32]; // 256 bit
+        byte[] truncatedKey = new byte[32];
         System.arraycopy(keyBytes, 0, truncatedKey, 0, truncatedKey.length);
         this.key = new SecretKeySpec(truncatedKey, ALGORITHM);
     }
@@ -46,8 +45,10 @@ public class CardUtil {
         }
     }
 
-    public String mask(String encryptedCardNumber) {
-        String cardNumber = decrypt(encryptedCardNumber);
-        return "**** **** **** " + cardNumber.substring(15);
+    public String mask(String cardNumber) {
+        if (cardNumber == null || cardNumber.length() < 8) {
+            return "****";
+        }
+        return cardNumber.substring(0, 4) + " **** **** " + cardNumber.substring(cardNumber.length() - 4);
     }
 }
