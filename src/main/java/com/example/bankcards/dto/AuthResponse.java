@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/dto/AuthResponse.java
 package com.example.bankcards.dto;
 
 import lombok.AllArgsConstructor;
