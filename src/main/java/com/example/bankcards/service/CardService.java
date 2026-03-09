@@ -178,7 +178,7 @@ public class CardService {
     }
 
     // ✅ Проверка доступа
-    private void checkAccess(Card card, User user) {
+    public void checkAccess(Card card, User user) {
         if (!card.getUser().getId().equals(user.getId()) && !Role.ADMIN.equals(user.getRole())) {
             logger.warn("Access denied for user ID={} trying to access card ID={}", user.getId(), card.getId());
             throw new CardException("Доступ запрещён");
