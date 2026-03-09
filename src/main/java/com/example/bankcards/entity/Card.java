@@ -22,8 +22,11 @@ public class Card {
     @Column(name = "card_number", nullable = false, unique = true)
     private String cardNumber;
 
-    @Column(name = "owner_name", nullable = false)
-    private String ownerName;
+    @Column(name = "card_holder_name", nullable = false)
+    private String cardHolderName;
+
+    @Column(name = "cvv", nullable = false)
+    private String cvv;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDate expiryDate;
