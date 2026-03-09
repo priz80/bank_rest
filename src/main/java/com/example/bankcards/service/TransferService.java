@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/service/TransferService.java
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.TransferRequest;
