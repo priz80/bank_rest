@@ -1,1 +1,296 @@
 # Здесь будет OpenAPI описание всех доступных эндпоинтов и моделей данных.
+
+openapi: 3.0.1
+info:
+  title: Bank Cards Management API
+  description: REST API for managing bank cards, transfers, and user roles.
+  version: "1.0"
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: john_doe
+        password:
+          type: string
+          format: password
+          example: secret123
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
+        user:
+          $ref: '#/components/schemas/UserDto'
+
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        username:
+          type: string
+          example: john_doe
+        role:
+          type: string
+          enum: [USER, ADMIN]
+          example: USER
+
+    CardDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 101
+        maskedCardNumber:
+          type: string
+          example: "**** **** **** 1234"
+        ownerName:
+          type: string
+          example: John Doe
+        expiryDate:
+          type: string
+          format: date
+          example: "2028-12-31"
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, EXPIRED]
+          example: ACTIVE
+        balance:
+          type: number
+          format: decimal
+          example: 5000.00
+        userId:
+          type: integer
+          format: int64
+          example: 1
+
+    CreateCardRequest:
+      type: object
+      required: [cardNumber, ownerName, expiryDate, balance]
+      properties:
+        cardNumber:
+          type: string
+          pattern: "^\d{4} \d{4} \d{4} \d{4}$"
+          example: "1234 5678 9012 3456"
+        ownerName:
+          type: string
+          example: John Doe
+        expiryDate:
+          type: string
+          format: date
+          example: "2028-12-31"
+        balance:
+          type: number
+          format: decimal
+          example: 1000.00
+
+    TransferRequest:
+      type: object
+      required: [fromCardId, toCardId, amount]
+      properties:
+        fromCardId:
+          type: integer
+          format: int64
+          example: 101
+        toCardId:
+          type: integer
+          format: int64
+          example: 102
+        amount:
+          type: number
+          format: decimal
+          example: 500.00
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Authenticate user and get JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+
+  /api/cards:
+    get:
+      summary: Get user's cards (paginated)
+      responses:
+        '200':
+          description: List of user's cards
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CardDto'
+                  totalPages:
+                    type: integer
+                  totalElements:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+
+    post:
+      summary: Create a new card (ADMIN only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCardRequest'
+      responses:
+        '200':
+          description: Card created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDto'
+
+  /api/cards/all:
+    get:
+      summary: Get all cards (ADMIN only)
+      responses:
+        '200':
+          description: List of all cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CardDto'
+
+  /api/cards/{id}:
+    get:
+      summary: Get card by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Card details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDto'
+
+  /api/cards/{id}/block:
+    post:
+      summary: Block card (USER or ADMIN)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Card blocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDto'
+
+  /api/cards/{id}/activate:
+    post:
+      summary: Activate card (ADMIN only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Card activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDto'
+
+  /api/cards/{id}:
+    delete:
+      summary: Delete card (ADMIN only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Card deleted
+
+  /api/transfer:
+    post:
+      summary: Transfer money between own cards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transfer successful
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Transfer successful
+        '400':
+          description: Insufficient funds or invalid cards
+
+  /api/users:
+    get:
+      summary: Get all users (ADMIN only)
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
