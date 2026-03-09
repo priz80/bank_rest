@@ -62,6 +62,12 @@ public class TransferService {
             throw new CardException("Целевая карта недействительна (статус: " + toCard.getStatus() + ")");
         }
 
+        // Запрет перевода на ту же карту
+        if (fromCard.getId().equals(toCard.getId())) {
+            logger.warn("Attempt to transfer to the same card: cardId={}", fromCard.getId());
+            throw new CardException("Нельзя перевести деньги на ту же карту");
+        }
+
         // Проверка баланса
         if (fromCard.getBalance().compareTo(amount) < 0) {
             logger.warn("Insufficient funds: balance={}, requested={}", fromCard.getBalance(), amount);
@@ -75,6 +81,7 @@ public class TransferService {
         cardRepository.save(fromCard);
         cardRepository.save(toCard);
 
-        logger.info("Transfer completed successfully: {} transferred from card {} to card {}", amount, fromCardId, toCardId);
+        logger.info("Transfer completed successfully: {} transferred from card {} to card {}", amount, fromCardId,
+                toCardId);
     }
 }
