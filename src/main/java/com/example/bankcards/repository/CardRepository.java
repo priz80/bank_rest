@@ -25,4 +25,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     @Query("SELECT c FROM Card c WHERE c.status != 'EXPIRED' AND c.expiryDate < CURRENT_DATE")
     List<Card> findActiveExpiredCards();
+
+    @Query("SELECT c FROM Card c WHERE c.user.id = :userId")
+    List<Card> findByUserId(Long userId);
 }
