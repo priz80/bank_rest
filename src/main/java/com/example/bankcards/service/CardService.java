@@ -4,7 +4,10 @@ import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.dto.CreateCardRequest;
 import com.example.bankcards.entity.*;
 import com.example.bankcards.exception.CardException;
+import com.example.bankcards.exception.UserException;
 import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.repository.UserRepository;
+import com.example.bankcards.util.CardGenerator;
 import com.example.bankcards.util.CardUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -24,80 +28,90 @@ public class CardService {
     private static final Logger logger = LoggerFactory.getLogger(CardService.class);
 
     private final CardRepository cardRepository;
+    private final UserRepository userRepository;
     private final CardUtil cardUtil;
 
-    public CardService(CardRepository cardRepository, CardUtil cardUtil) {
-        this.cardRepository = cardRepository;
-        this.cardUtil = cardUtil;
-    }
+    private final CardGenerator cardGenerator;
 
-    /**
-     * Создание новой карты
-     */
-    public CardDto createCard(CreateCardRequest request, User user) {
-        logger.debug("Creating new card for user ID={}", user.getId());
+public CardService(CardRepository cardRepository,
+                   UserRepository userRepository,
+                   CardUtil cardUtil,
+                   CardGenerator cardGenerator) {
+    this.cardRepository = cardRepository;
+    this.userRepository = userRepository;
+    this.cardUtil = cardUtil;
+    this.cardGenerator = cardGenerator;
+}
 
-        String encryptedCardNumber = cardUtil.encrypt(request.getCardNumber());
-        if (cardRepository.existsByCardNumber(encryptedCardNumber)) {
-            throw new CardException("Card with this number already exists");
+    // ✅ Создать карту с генерацией (для админа или пользователя)
+    public CardDto createCardForUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException("Пользователь не найден"));
+
+        if (user.getStatus() != User.Status.ACTIVE) {
+            throw new CardException("Нельзя создать карту для пользователя со статусом: " + user.getStatus());
         }
-
-        YearMonth yearMonth;
-        try {
-            yearMonth = YearMonth.parse(request.getExpiryDate());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid expiry date format: use YYYY-MM", e);
-        }
-        LocalDate cardExpiryDate = yearMonth.atDay(1);
 
         Card card = new Card();
-        card.setCardNumber(encryptedCardNumber);
-        card.setOwnerName(request.getCardHolderName());
-        card.setExpiryDate(cardExpiryDate);
+        card.setCardNumber(cardGenerator.generateCardNumber());
+        card.setCvv(cardGenerator.generateCvv());
+        card.setExpiryDate(cardGenerator.calculateExpiryDate());
+        card.setBalance(BigDecimal.ZERO);
         card.setStatus(CardStatus.ACTIVE);
-        card.setBalance(request.getBalance() != null ? request.getBalance() : BigDecimal.ZERO);
         card.setUser(user);
 
-        logger.info("Saving card for user ID={}", user.getId());
         Card saved = cardRepository.save(card);
-        logger.info("Card saved successfully, ID={}", saved.getId());
-
         return toDto(saved);
     }
 
-    /**
-     * Получение своих карт (для USER) или всех (для ADMIN)
-     */
+    // ✅ Создать карту вручную (только для админа)
+    public CardDto createCardManually(CreateCardRequest request, Long userId) {
+        if (cardRepository.findByCardNumber(request.getCardNumber()).isPresent()) {
+            throw new CardException("Карта с таким номером уже существует");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException("Пользователь не найден"));
+
+        if (user.getStatus() != User.Status.ACTIVE) {
+            throw new CardException("Нельзя создать карту для пользователя со статусом: " + user.getStatus());
+        }
+
+        Card card = new Card();
+        card.setCardNumber(cardGenerator.generateCardNumber());
+        card.setCardHolderName(request.getCardHolderName());
+        card.setExpiryDate(LocalDate.parse(request.getExpiryDate() + "-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        card.setBalance(request.getBalance());
+        card.setStatus(CardStatus.ACTIVE);
+        card.setUser(user);
+
+        Card saved = cardRepository.save(card);
+        return toDto(saved);
+    }
+
+    // ✅ Получение своих карт (USER) или всех (ADMIN)
     public Page<CardDto> getCardsByUser(User user, Pageable pageable) {
-        Page<Card> cards = (!Role.ADMIN.equals(user.getRole()))
-                ? cardRepository.findAll(pageable)
-                : cardRepository.findByUser(user, pageable);
+        Page<Card> cards = Role.ADMIN.equals(user.getRole())
+                ? cardRepository.findAll(pageable)           // Админ — все карты
+                : cardRepository.findByUser(user, pageable); // USER — только свои
         return cards.map(this::toDto);
     }
 
-    /**
-     * Получение конкретной карты по ID
-     */
+    // ✅ Получение карты по ID
     public CardDto getCardById(Long id, User user) {
         Card card = getCardEntityById(id);
         checkAccess(card, user);
         return toDto(card);
     }
 
-    /**
-     * Получение всех карт (только для ADMIN)
-     */
-    public Page<CardDto> getAllCards(Pageable pageable) {
-        Page<Card> cards = cardRepository.findAll(pageable);
-        return cards.map(this::toDto);
-    }
-
-    /**
-     * Блокировка карты
-     */
+    // ✅ Блокировка карты
     public CardDto blockCard(Long id, User user) {
         Card card = getCardEntityById(id);
         checkAccess(card, user);
+
+        if (card.getStatus() == CardStatus.BLOCKED) {
+            throw new CardException("Карта уже заблокирована");
+        }
 
         card.setStatus(CardStatus.BLOCKED);
         Card updated = cardRepository.save(card);
@@ -106,17 +120,15 @@ public class CardService {
         return toDto(updated);
     }
 
-    /**
-     * Активация карты
-     */
+    // ✅ Активация карты
     public CardDto activateCard(Long id, User user) {
         logger.debug("Activating card with ID={}", id);
 
         Card card = getCardEntityById(id);
         checkAccess(card, user);
 
-        if (CardStatus.ACTIVE.equals(card.getStatus())) {
-            throw new CardException("Card is already active");
+        if (card.getStatus() == CardStatus.ACTIVE) {
+            throw new CardException("Карта уже активна");
         }
 
         card.setStatus(CardStatus.ACTIVE);
@@ -126,9 +138,7 @@ public class CardService {
         return toDto(updated);
     }
 
-    /**
-     * Удаление карты
-     */
+    // ✅ Удаление карты
     public void deleteCard(Long id, User user) {
         Card card = getCardEntityById(id);
         checkAccess(card, user);
@@ -141,17 +151,13 @@ public class CardService {
         logger.info("Card deleted, ID={}", id);
     }
 
-    /**
-     * Поиск сущности по ID
-     */
+    // ✅ Получение сущности по ID
     public Card getCardEntityById(Long id) {
         return cardRepository.findById(id)
-                .orElseThrow(() -> new CardException("Card not found"));
+                .orElseThrow(() -> new CardException("Карта не найдена"));
     }
 
-    /**
-     * Проверка, просрочена ли карта
-     */
+    // ✅ Проверка просроченности
     public boolean isCardExpired(Card card) {
         if (card.getExpiryDate() == null) {
             logger.warn("Card with ID={} has null expiry date", card.getId());
@@ -160,55 +166,44 @@ public class CardService {
         return card.getExpiryDate().isBefore(LocalDate.now());
     }
 
-    /**
-     * Пометить карту как просроченную
-     */
+    // ✅ Пометить как просроченную
     public void markAsExpired(Card card) {
-        if (!CardStatus.EXPIRED.equals(card.getStatus())) {
+        if (card.getStatus() != CardStatus.EXPIRED) {
             card.setStatus(CardStatus.EXPIRED);
             cardRepository.save(card);
             logger.info("Card marked as expired, ID={}", card.getId());
         }
     }
 
-    /**
-     * Фоновая задача: ежедневная проверка просроченных карт
-     */
+    // ✅ Ежедневная проверка
     @Scheduled(cron = "0 0 1 * * ?")
     public void expireOldCards() {
         logger.info("Running scheduled task: checking expired cards");
-
         List<Card> expiredCards = cardRepository.findActiveExpiredCards();
         expiredCards.forEach(this::markAsExpired);
-
         if (!expiredCards.isEmpty()) {
             logger.info("Marked {} cards as expired", expiredCards.size());
         }
     }
 
-    /**
-     * Преобразование сущности в DTO
-     */
+    // ✅ Преобразование в DTO
     private CardDto toDto(Card card) {
         CardDto dto = new CardDto();
         dto.setId(card.getId());
         dto.setMaskedCardNumber(cardUtil.mask(card.getCardNumber()));
-        dto.setOwnerName(card.getOwnerName());
-        dto.setExpiryDate(card.getExpiryDate() != null ? YearMonth.from(card.getExpiryDate()) : null);
+        dto.setCardHolderName(card.getCardHolderName()); // унифицировано
+        dto.setExpiryDate(cardGenerator.calculateExpiryDate() != null ? YearMonth.from(card.getExpiryDate()) : null);
         dto.setStatus(card.getStatus());
         dto.setBalance(card.getBalance());
         dto.setUserId(card.getUser().getId());
         return dto;
     }
 
-    /**
-     * Проверка доступа к карте
-     */
+    // ✅ Проверка доступа
     private void checkAccess(Card card, User user) {
         if (!card.getUser().getId().equals(user.getId()) && !Role.ADMIN.equals(user.getRole())) {
             logger.warn("Access denied for user ID={} trying to access card ID={}", user.getId(), card.getId());
-            throw new CardException("Access denied");
+            throw new CardException("Доступ запрещён");
         }
-
     }
 }
