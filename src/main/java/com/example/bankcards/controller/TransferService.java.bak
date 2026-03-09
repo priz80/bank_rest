@@ -1,0 +1,65 @@
+package com.example.bankcards.controller;
+
+import com.example.bankcards.dto.TransferRequest;
+import com.example.bankcards.entity.Card;
+import com.example.bankcards.entity.CardStatus;
+import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.CardException;
+import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.service.CardService;
+
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+/**
+ * Контроллер для выполнения переводов между картами
+ */
+@Service
+@Transactional
+public class TransferService {
+
+    private final CardRepository cardRepository;
+    private final CardService cardService;
+
+    public TransferService(CardRepository cardRepository, CardService cardService) {
+        this.cardRepository = cardRepository;
+        this.cardService = cardService;
+    }
+
+    public void transfer(TransferRequest request, User user) {
+        // 1. Получаем карты
+        Card fromCard = cardRepository.findById(request.getFromCardId())
+                .orElseThrow(() -> new CardException("Карта отправителя не найдена"));
+
+        Card toCard = cardRepository.findById(request.getToCardId())
+                .orElseThrow(() -> new CardException("Карта получателя не найдена"));
+
+        // 2. Проверяем доступ к карте отправителя
+        cardService.checkAccess(fromCard, user);
+
+        // 3. Проверяем, что это не одна и та же карта
+        if (fromCard.getId().equals(toCard.getId())) {
+            throw new CardException("Нельзя перевести деньги на ту же карту");
+        }
+
+        // 4. Проверяем статусы
+        if (fromCard.getStatus() != CardStatus.ACTIVE) {
+            throw new CardException("Карта отправителя заблокирована или неактивна");
+        }
+        if (toCard.getStatus() != CardStatus.ACTIVE) {
+            throw new CardException("Карта получателя заблокирована или неактивна");
+        }
+
+        // 5. Проверяем баланс
+        if (fromCard.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new CardException("Недостаточно средств для перевода");
+        }
+
+        // 6. Выполняем перевод
+        fromCard.setBalance(fromCard.getBalance().subtract(request.getAmount()));
+        toCard.setBalance(toCard.getBalance().add(request.getAmount()));
+
+        cardRepository.save(fromCard);
+        cardRepository.save(toCard);
+    }
+}
