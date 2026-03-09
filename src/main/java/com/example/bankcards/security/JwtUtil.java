@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
-import jakarta.annotation.PostConstruct; // ← Добавьте эту строку
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtUtil {
@@ -18,7 +18,7 @@ public class JwtUtil {
     private final Key key;
     private final long expiration;
 
-    @Value("${jwt.secret}") // ← Лучше вынести сюда для доступа в @PostConstruct
+    @Value("${jwt.secret}")
     private String secret;
 
     public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration) {
@@ -37,7 +37,7 @@ public class JwtUtil {
     try {
         String token = Jwts.builder()
                 .setSubject(username)
-                .claim("role", role) // ← Добавляем роль как claim
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS512)
