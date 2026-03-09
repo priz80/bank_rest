@@ -1,9 +1,0 @@
-DELETE FROM cards WHERE user_id IN (SELECT id FROM users WHERE username IN ('admin', 'user'));
-DELETE FROM users WHERE username IN ('admin', 'user');
-
-
-INSERT INTO users (username, password, role) VALUES
-('admin', '$2a$12$TJY2yXHVjU.mkD./bJJfauzH8e4pg4wJL0APMPtgP/7Qzu.L2Hjnu', 'ADMIN'),
-('user', '$2a$12$orM/ZkbTY4g7iBWwNsNgzOu1T0tcq8q6ZuFn1tBO/PonXrizUOVky', 'USER');
-
-SELECT '✅ Users created: admin (admin123), user (user123)';
