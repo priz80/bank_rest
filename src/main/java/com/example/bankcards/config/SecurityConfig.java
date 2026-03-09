@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/cards/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/transfers").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/cards/manual").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
