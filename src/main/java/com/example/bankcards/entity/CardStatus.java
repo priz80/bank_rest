@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/entity/CardStatus.java
 package com.example.bankcards.entity;
 
 public enum CardStatus {
