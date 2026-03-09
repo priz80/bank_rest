@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/security/JwtFilter.java
 package com.example.bankcards.security;
 
 import com.example.bankcards.service.CustomUserDetailsService;
@@ -37,9 +36,14 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
+        System.out.println("🔍 JwtFilter: processing request: " + request.getRequestURI());
+        System.out.println("🔍 Method: " + request.getMethod());
+
         final String header = request.getHeader("Authorization");
+        System.out.println("🔍 Header: " + header);
 
         if (header == null || !header.startsWith("Bearer ")) {
+            System.out.println("🔍 No Bearer token, passing to chain");
             chain.doFilter(request, response);
             return;
         }
@@ -74,8 +78,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
 
                 GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, Collections.singletonList(authority));
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                        null, Collections.singletonList(authority));
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
