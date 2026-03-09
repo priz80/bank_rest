@@ -12,7 +12,8 @@
             <column name="card_number" type="VARCHAR(255)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="owner_name" type="VARCHAR(100)">
+            <!-- Исправлено: card_holder_name вместо owner_name -->
+            <column name="card_holder_name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="expiry_date" type="DATE">
@@ -27,16 +28,21 @@
             <column name="user_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="cvv" type="VARCHAR(4)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
+        <!-- Внешний ключ на users -->
         <addForeignKeyConstraint
-                baseTableName="cards"
-                baseColumnNames="user_id"
-                constraintName="fk_card_user"
-                referencedTableName="users"
-                referencedColumnNames="id"
-                onDelete="CASCADE"/>
+            baseTableName="cards"
+            baseColumnNames="user_id"
+            constraintName="fk_card_user"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
 
+        <!-- Индексы -->
         <createIndex tableName="cards" indexName="idx_card_user">
             <column name="user_id"/>
         </createIndex>
