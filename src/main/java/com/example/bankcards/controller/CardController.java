@@ -1,7 +1,6 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDto;
-import com.example.bankcards.dto.CreateCardRequest;
 import com.example.bankcards.dto.GenerateCardRequest;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
@@ -17,8 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 @Tag(name = "Cards", description = "API для управления банковскими картами")
 @RestController
@@ -52,22 +49,6 @@ public class CardController {
 
         CardDto cardDto = cardService.createCardForUser(targetUserId);
         return ResponseEntity.ok(cardDto);
-    }
-
-    // ✅ Эндпоинт: импорт карты вручную
-    // В CardController
-    @PostMapping("/manual")
-    public ResponseEntity<CardDto> createCardManually(
-            @RequestBody @Valid CreateCardRequest request,
-            @RequestParam Long userId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-        if (!userDetails.getUser().getRole().equals(Role.ADMIN)) {
-            throw new AccessDeniedException("...");
-        }
-
-        CardDto dto = cardService.createCardManually(request, userId);
-        return ResponseEntity.ok(dto);
     }
 
     /**
