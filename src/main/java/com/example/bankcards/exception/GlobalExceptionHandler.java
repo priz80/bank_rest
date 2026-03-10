@@ -10,9 +10,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
+import org.springframework.security.access.AccessDeniedException;
 import jakarta.annotation.PostConstruct;
-
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,4 +83,35 @@ public class GlobalExceptionHandler {
         logger.error("Unexpected error", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+
+    public ResponseEntity<String> handleAccessDenied() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Доступ запрещён");
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleEntityNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Объект не найден");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        if (e.getMessage().contains("card_number")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Номер карты уже существует");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ошибка целостности данных");
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e) {
+        return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<String> handleOptimisticLock() {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Данные устарели. Обновите и попробуйте снова.");
+    }
+
 }
