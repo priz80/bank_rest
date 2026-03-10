@@ -13,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+/**
+ * Сервис для выполнения переводов между банковскими картами.
+ * Обеспечивает проверку доступа, статусов карт, баланса и выполняет транзакцию перевода.
+ */
 @Service
 @Transactional
 public class TransferService {
@@ -26,7 +30,16 @@ public class TransferService {
     }
 
     /**
-     * Выполняет перевод средств между двумя картами
+     * Выполняет перевод средств между двумя картами.
+     *
+     * @param request Данные перевода (ID карт, сумма)
+     * @param user    Пользователь, инициирующий перевод
+     * @throws CardException Если:
+     *                       - карта не найдена
+     *                       - нет доступа
+     *                       - карта неактивна
+     *                       - недостаточно средств
+     *                       - попытка перевода на ту же карту
      */
     public void transfer(TransferRequest request, User user) {
         Long fromCardId = request.getFromCardId();
@@ -44,7 +57,7 @@ public class TransferService {
         Card toCard = cardRepository.findById(toCardId)
                 .orElseThrow(() -> new CardException("Целевая карта не найдена"));
 
-        // Проверка доступа к исходящей карте
+        // Проверка доступа к исходящей карте (владелец или админ)
         if (!fromCard.getUser().getId().equals(user.getId()) && !user.getRole().equals(Role.ADMIN)) {
             logger.warn("Access denied: user ID={} tried to access card ID={}", user.getId(), fromCardId);
             throw new CardException("Нет доступа к исходящей карте");
