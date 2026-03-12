@@ -1,5 +1,4 @@
-# Здесь будет OpenAPI описание всех доступных эндпоинтов и моделей данных.
-
+# docs/openapi.yaml
 openapi: 3.0.1
 info:
   title: Bank Cards Management API
@@ -110,25 +109,70 @@ components:
 
     TransferRequest:
       type: object
-      required: [fromCardId, toCardId, amount]
+      required:
+        - fromCardId
+        - toCardId
+        - amount
       properties:
         fromCardId:
           type: integer
           format: int64
-          example: 101
+          example: 1
+          description: ID карты-отправителя
         toCardId:
           type: integer
           format: int64
-          example: 102
+          example: 2
+          description: ID карты-получателя
         amount:
           type: number
           format: decimal
-          example: 500.00
+          example: 100.00
+          description: Сумма перевода
+
+  responses:
+    BadRequest:
+      description: Некорректные данные
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    Forbidden:
+      description: Доступ запрещён
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+
+tags:
+  - name: Auth
+    description: Аутентификация пользователей
+  - name: Cards
+    description: Управление банковскими картами
+  - name: Admin
+    description: Функции администратора
 
 paths:
   /api/auth/login:
     post:
-      summary: Authenticate user and get JWT token
+      tags:
+        - Auth
+      summary: Аутентификация пользователя и получение JWT токена
       requestBody:
         required: true
         content:
@@ -137,20 +181,41 @@ paths:
               $ref: '#/components/schemas/AuthRequest'
       responses:
         '200':
-          description: Successful login
+          description: Успешный вход
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
         '401':
-          description: Invalid credentials
+          description: Неверные учётные данные
 
   /api/cards:
     get:
-      summary: Get user's cards (paginated)
+      tags:
+        - Cards
+      summary: Получить свои карты (с пагинацией)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Номер страницы
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Размер страницы
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: "id,asc"
+          description: Поле и направление сортировки (например: balance,desc)
       responses:
         '200':
-          description: List of user's cards
+          description: Список карт пользователя
           content:
             application/json:
               schema:
@@ -170,101 +235,114 @@ paths:
                     type: integer
 
     post:
-      summary: Create a new card (ADMIN only)
+      tags:
+        - Cards
+      summary: Создать новую карту (автогенерация номера, CVV, срока)
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCardRequest'
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  format: int64
+                  example: 1
+                  description: ID пользователя (только для ADMIN)
       responses:
         '200':
-          description: Card created
+          description: Карта создана
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CardDto'
-
-  /api/cards/all:
-    get:
-      summary: Get all cards (ADMIN only)
-      responses:
-        '200':
-          description: List of all cards
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CardDto'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /api/cards/{id}:
     get:
-      summary: Get card by ID
+      tags:
+        - Cards
+      summary: Получить карту по ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+            format: int64
       responses:
         '200':
-          description: Card details
+          description: Данные карты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Cards
+      summary: Заблокировать карту
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Карта заблокирована
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CardDto'
 
-  /api/cards/{id}/block:
-    post:
-      summary: Block card (USER or ADMIN)
+    delete:
+      tags:
+        - Cards
+      summary: Удалить карту (только ADMIN)
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+            format: int64
       responses:
-        '200':
-          description: Card blocked
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CardDto'
+        '204':
+          description: Карта удалена
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /api/cards/{id}/activate:
     post:
-      summary: Activate card (ADMIN only)
+      tags:
+        - Cards
+      summary: Активировать карту (только ADMIN)
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+            format: int64
       responses:
         '200':
-          description: Card activated
+          description: Карта активирована
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CardDto'
 
-  /api/cards/{id}:
-    delete:
-      summary: Delete card (ADMIN only)
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Card deleted
-
-  /api/transfer:
+  /api/cards/transfers:
     post:
-      summary: Transfer money between own cards
+      tags:
+        - Cards
+      summary: Перевод средств между своими картами (по ID)
       requestBody:
         required: true
         content:
@@ -273,24 +351,32 @@ paths:
               $ref: '#/components/schemas/TransferRequest'
       responses:
         '200':
-          description: Transfer successful
+          description: Перевод выполнен успешно
           content:
             text/plain:
               schema:
                 type: string
-                example: Transfer successful
+                example: "Перевод выполнен успешно"
         '400':
-          description: Insufficient funds or invalid cards
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/users:
     get:
-      summary: Get all users (ADMIN only)
+      tags:
+        - Admin
+      summary: Получить всех пользователей (только ADMIN)
       responses:
         '200':
-          description: List of users
+          description: Список пользователей
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserDto'
+        '403':
+          $ref: '#/components/responses/Forbidden'
