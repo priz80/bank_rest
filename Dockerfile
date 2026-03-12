@@ -1,5 +1,7 @@
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY target/bankcards-1.0.0.jar app.jar
+COPY . .
+RUN chmod +x mvnw
+RUN ./mvnw clean package -DskipTests  # ← Сборка внутри контейнера
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "target/*.jar"]
