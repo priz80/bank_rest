@@ -56,6 +56,10 @@ components:
           type: string
           enum: [USER, ADMIN]
           example: USER
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, DELETED]
+          example: ACTIVE
 
     CardDto:
       type: object
@@ -129,6 +133,21 @@ components:
           format: decimal
           example: 100.00
           description: Сумма перевода
+
+    CreateUserRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: alice_wonder
+        password:
+          type: string
+          format: password
+          writeOnly: true
+          example: securePass123
 
   responses:
     BadRequest:
@@ -243,13 +262,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                  format: int64
-                  example: 1
-                  description: ID пользователя (только для ADMIN)
+              $ref: '#/components/schemas/CreateCardRequest'
       responses:
         '200':
           description: Карта создана
@@ -364,7 +377,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/users:
+  /api/admin/users:
     get:
       tags:
         - Admin
@@ -380,3 +393,103 @@ paths:
                   $ref: '#/components/schemas/UserDto'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Admin
+      summary: Создать нового пользователя (только ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '200':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/users/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Получить пользователя по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Admin
+      summary: Изменить статус пользователя
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ACTIVE, BLOCKED, DELETED]
+                  example: BLOCKED
+      responses:
+        '200':
+          description: Статус обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Admin
+      summary: Удалить пользователя (только если DELETED и нет карт)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Пользователь успешно удалён
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Пользователь успешно удалён"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/BadRequest'
