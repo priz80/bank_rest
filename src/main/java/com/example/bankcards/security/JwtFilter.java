@@ -36,14 +36,11 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        System.out.println("🔍 JwtFilter: processing request: " + request.getRequestURI());
-        System.out.println("🔍 Method: " + request.getMethod());
+        logger.debug("Processing request: {}, method: {}", request.getRequestURI(), request.getMethod());
 
         final String header = request.getHeader("Authorization");
-        System.out.println("🔍 Header: " + header);
-
         if (header == null || !header.startsWith("Bearer ")) {
-            System.out.println("🔍 No Bearer token, passing to chain");
+            logger.debug("No Bearer token, passing to next filter");
             chain.doFilter(request, response);
             return;
         }
@@ -52,28 +49,34 @@ public class JwtFilter extends OncePerRequestFilter {
         final String username;
 
         try {
+            // Даже если просрочен — extractUsername может вернуть username
             username = jwtUtil.extractUsername(token);
+            if (username == null) {
+                logger.warn("Username not found in token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         } catch (Exception e) {
-            logger.warn("Invalid JWT token", e);
-            chain.doFilter(request, response);
+            logger.warn("Cannot extract username from token", e);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetailsImpl userDetails;
             try {
                 userDetails = (UserDetailsImpl) customUserDetailsService.loadUserByUsername(username);
             } catch (UsernameNotFoundException e) {
                 logger.warn("User not found: {}", username);
-                chain.doFilter(request, response);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
 
             if (jwtUtil.validateToken(token, username)) {
                 String role = jwtUtil.extractRole(token);
                 if (role == null || (!"ADMIN".equals(role) && !"USER".equals(role))) {
-                    logger.warn("Invalid or missing role in token: {}", role);
-                    chain.doFilter(request, response);
+                    logger.warn("Invalid role in token: {}", role);
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
 
@@ -84,6 +87,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 logger.info("Authenticated user: {}, Role: {}", username, role);
+            } else {
+                logger.warn("Token validation failed for user: {}", username);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
         }
 
