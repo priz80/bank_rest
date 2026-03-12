@@ -6,9 +6,6 @@ public enum CardStatus {
     BLOCKED,
     EXPIRED;
 
-    /**
-     * Проверяет, активна ли карта (не заблокирована и не просрочена)
-     */
     public boolean isActive() {
         return this == ACTIVE;
     }
