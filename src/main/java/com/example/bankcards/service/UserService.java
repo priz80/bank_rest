@@ -7,10 +7,11 @@ import com.example.bankcards.entity.User.Status;
 import com.example.bankcards.exception.UserException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -36,7 +37,7 @@ public class UserService {
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public User getUserEntityById(Long id) {
@@ -44,7 +45,6 @@ public class UserService {
                 .orElseThrow(() -> new UserException("Пользователь не найден с ID: " + id));
     }
 
-    // Добавьте метод, если ещё нет:
     public User createUser(String username, String encodedPassword) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new UserException("Пользователь с таким именем уже существует");
@@ -53,7 +53,7 @@ public class UserService {
         user.setUsername(username);
         user.setPassword(encodedPassword);
         user.setRole(Role.USER);
-        user.setStatus(User.Status.ACTIVE);
+        user.setStatus(Status.ACTIVE);
         return userRepository.save(user);
     }
 
@@ -76,6 +76,10 @@ public class UserService {
         }
 
         userRepository.deleteById(id);
+    }
+
+    public Page<UserDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::toDto);
     }
 
     public UserDto toDto(User user) {
