@@ -23,27 +23,20 @@ public class JwtUtil {
         if (secret == null || secret.isEmpty()) {
             throw new IllegalArgumentException("JWT secret cannot be null or empty");
         }
+        System.out.println("🔐 RAW JWT Secret: '" + secret + "'");
+        System.out.println("🔐 JWT Secret length: " + secret.length());
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
     }
 
     public String generateToken(String username, String role) {
-        System.out.println("🔐 Генерация токена для: " + username + ", роль: " + role);
-        try {
-            String token = Jwts.builder()
-                    .setSubject(username)
-                    .claim("role", role)
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                    .signWith(key, SignatureAlgorithm.HS512)
-                    .compact();
-            System.out.println("✅ Токен успешно сгенерирован: " + token.substring(0, 20) + "...");
-            return token;
-        } catch (Exception e) {
-            System.err.println("❌ ОШИБКА при генерации токена:");
-            e.printStackTrace();
-            throw e;
-        }
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
     }
 
     private Claims getClaims(String token) {
@@ -54,10 +47,8 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            System.err.println("⚠️ JWT expired, but claims extracted");
             return e.getClaims();
         } catch (Exception e) {
-            System.err.println("❌ Invalid JWT: " + e.getMessage());
             return null;
         }
     }
@@ -72,14 +63,14 @@ public class JwtUtil {
         return claims != null ? claims.get("role", String.class) : null;
     }
 
-    public Date extractExpiration(String token) {
-        Claims claims = getClaims(token);
-        return claims != null ? claims.getExpiration() : null;
-    }
-
     public boolean isTokenExpired(String token) {
         Date expiration = extractExpiration(token);
         return expiration != null && expiration.before(new Date());
+    }
+
+    public Date extractExpiration(String token) {
+        Claims claims = getClaims(token);
+        return claims != null ? claims.getExpiration() : null;
     }
 
     public boolean validateToken(String token, String username) {
@@ -89,4 +80,5 @@ public class JwtUtil {
                 extractedUsername.equals(username) &&
                 !isTokenExpired(token));
     }
+
 }
