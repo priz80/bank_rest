@@ -41,7 +41,16 @@ public class CardController {
 
     // ✅ Основной эндпоинт: генерация новой карты (авто)
     @PostMapping
-    @Operation(summary = "Создать новую карту (автогенерация номера, CVV, срока)")
+    @Operation(summary = "Создать новую карту (автогенерация номера, CVV, срока)", 
+    description = """
+        - **USER**: может создать карту только для себя. Поле `userId` в запросе игнорируется.
+        - **ADMIN**: может указать `userId`, чтобы создать карту любому пользователю.
+        """,
+    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        description = "Тело запроса. Для ADMIN — можно указать `userId`. Для USER — тело можно не передавать.",
+        required = false,
+        content = @Content(schema = @Schema(implementation = GenerateCardRequest.class))
+))
     public ResponseEntity<CardDto> generateCard(
             @RequestBody(required = false) GenerateCardRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -50,11 +59,16 @@ public class CardController {
         Long targetUserId;
 
         if (request != null && request.getUserId() != null) {
+            Long requestedUserId = request.getUserId();
+
+            // Если пользователь НЕ админ и пытается указать userId (даже свой) — запрещено
             if (!currentUser.getRole().equals(Role.ADMIN)) {
-                throw new AccessDeniedException("Только администратор может создавать карты для других пользователей");
+                throw new AccessDeniedException("Только администратор может указывать ID пользователя");
             }
-            targetUserId = request.getUserId();
+
+            targetUserId = requestedUserId;
         } else {
+            // USER всегда попадает сюда — создаёт себе карту
             targetUserId = currentUser.getId();
         }
 
