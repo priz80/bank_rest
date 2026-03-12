@@ -10,31 +10,21 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
-import jakarta.annotation.PostConstruct;
-
 @Component
 public class JwtUtil {
 
     private final Key key;
     private final long expirationMs;
 
-    @Value("${jwt.secret}")
-    private String secret;
+    public JwtUtil(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration}") long expirationMs) {
 
-    public JwtUtil(@Value("${jwt.secret}") String secret,
-                   @Value("${jwt.expiration-ms}") long expirationMs) {
         if (secret == null || secret.isEmpty()) {
             throw new IllegalArgumentException("JWT secret cannot be null or empty");
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("🔑 JWT Secret length: " + secret.length() + " chars");
-        System.out.println(
-                "🔐 Key size: " + key.getEncoded().length + " bytes (" + (key.getEncoded().length * 8) + " bits)");
     }
 
     public String generateToken(String username, String role) {
