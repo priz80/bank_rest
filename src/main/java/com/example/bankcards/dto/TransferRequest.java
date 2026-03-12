@@ -4,18 +4,22 @@ import java.math.BigDecimal;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class TransferRequest {
-    @NotNull(message = "Source card ID is required")
+
+    @NotNull(message = "ID карты отправителя обязательно")
     private Long fromCardId;
 
-    @NotNull(message = "Target card ID is required")
+    @NotNull(message = "ID карты получателя обязательно")
     private Long toCardId;
 
-    @Positive(message = "Amount must be greater than zero")
+    @NotNull(message = "Сумма обязательна")
+    @Positive(message = "Сумма должна быть больше нуля")
     private BigDecimal amount;
 }
