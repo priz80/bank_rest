@@ -15,12 +15,15 @@ public class CardUtil {
     private static final String ALGORITHM = "AES";
     private SecretKey key;
 
-    public CardUtil(@Value("${jwt.secret}") String secret) {
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        byte[] truncatedKey = new byte[32];
-        System.arraycopy(keyBytes, 0, truncatedKey, 0, truncatedKey.length);
-        this.key = new SecretKeySpec(truncatedKey, ALGORITHM);
+    public CardUtil(@Value("${card.encryption.key}") String encryptionKey) {
+    if (encryptionKey == null || encryptionKey.length() < 32) {
+        throw new IllegalArgumentException("Ключ шифрования должен быть не менее 32 символов");
     }
+    byte[] keyBytes = encryptionKey.getBytes(StandardCharsets.UTF_8);
+    byte[] truncatedKey = new byte[32];
+    System.arraycopy(keyBytes, 0, truncatedKey, 0, truncatedKey.length);
+    this.key = new SecretKeySpec(truncatedKey, "AES");
+}
 
     public String encrypt(String cardNumber) {
         try {
