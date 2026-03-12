@@ -27,91 +27,121 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    // Единый формат ответа для ошибок
+    public record ErrorResponse(String message) {}
+
     @PostConstruct
     public void init() {
         logger.info("GlobalExceptionHandler loaded");
     }
 
     @ExceptionHandler(CardException.class)
-    public ResponseEntity<String> handleCardException(CardException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public ResponseEntity<ErrorResponse> handleCardException(CardException e) {
+        logger.warn("Card error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(UserException.class)
-    public ResponseEntity<String> handleUserException(UserException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public ResponseEntity<ErrorResponse> handleUserException(UserException e) {
+        logger.warn("User error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentials() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+    public ResponseEntity<ErrorResponse> handleBadCredentials() {
+        String msg = "Invalid username or password";
+        logger.warn(msg);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(msg));
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException e) {
+        logger.warn("Authentication failed", e);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Authentication failed"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        logger.warn("Validation failed: {}", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("Validation failed: " + errors));
     }
 
     @ExceptionHandler(PropertyReferenceException.class)
-    public ResponseEntity<String> handleSortProperty(PropertyReferenceException e) {
+    public ResponseEntity<ErrorResponse> handleSortProperty(PropertyReferenceException e) {
+        String msg = "Invalid sort parameter: property '" + e.getPropertyName() + "' not found";
+        logger.warn(msg);
         return ResponseEntity.badRequest()
-                .body("Invalid sort parameter: property '" + e.getPropertyName() + "' not found");
+                .body(new ErrorResponse(msg));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
         String name = e.getName();
         String value = e.getValue() != null ? e.getValue().toString() : "null";
-        logger.warn("Invalid value '{}' for parameter '{}'", value, name);
+        String msg = "Invalid value '" + value + "' for parameter '" + name + "'. Must be a valid number.";
+        logger.warn(msg);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Invalid value '" + value + "' for parameter '" + name + "'. Must be a valid number.");
+                .body(new ErrorResponse(msg));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception e) {
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         logger.error("Unexpected error", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("Internal server error"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-
-    public ResponseEntity<String> handleAccessDenied() {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Доступ запрещён");
+    public ResponseEntity<ErrorResponse> handleAccessDenied() {
+        String msg = "Доступ запрещён";
+        logger.warn(msg);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(msg));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleEntityNotFound() {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Объект не найден");
+    public ResponseEntity<ErrorResponse> handleEntityNotFound() {
+        String msg = "Объект не найден";
+        logger.warn(msg);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(msg));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        String msg;
         if (e.getMessage().contains("card_number")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Номер карты уже существует");
+            msg = "Номер карты уже существует";
+        } else {
+            msg = "Ошибка целостности данных";
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ошибка целостности данных");
+        logger.warn("Data integrity violation: {}", msg);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(msg));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e) {
-        return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException e) {
+        return ResponseEntity.status(e.getStatusCode())
+                .body(new ErrorResponse(e.getReason()));
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)
-    public ResponseEntity<String> handleOptimisticLock() {
+    public ResponseEntity<ErrorResponse> handleOptimisticLock() {
+        String msg = "Данные устарели. Обновите и попробуйте снова.";
+        logger.warn(msg);
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body("Данные устарели. Обновите и попробуйте снова.");
+                .body(new ErrorResponse(msg));
     }
-
 }
