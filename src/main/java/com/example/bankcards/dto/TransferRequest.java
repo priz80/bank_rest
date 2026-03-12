@@ -1,12 +1,12 @@
 package com.example.bankcards.dto;
 
-import java.math.BigDecimal;
-
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
