@@ -7,7 +7,6 @@ import com.example.bankcards.entity.User.Status;
 import com.example.bankcards.exception.UserException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +15,18 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final CardRepository cardRepository;
 
-    @Autowired
-    private CardRepository cardRepository;
+    public UserService(UserRepository userRepository, CardRepository cardRepository) {
+        this.userRepository = userRepository;
+        this.cardRepository = cardRepository;
+    }
+
+    public User getUserEntityByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserException("Пользователь не найден: " + username));
+    }
 
     public UserDto getUserById(Long id) {
         User user = getUserEntityById(id);
