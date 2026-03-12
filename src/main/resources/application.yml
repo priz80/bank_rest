@@ -1,11 +1,8 @@
-server:
-  port: 8080
-
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/bankcards_db
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bankcards}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -20,7 +17,7 @@ spring:
     enabled: true
 
 jwt:
-  secret: mySuperSecretKeyThatMustBeAtLeast32CharactersLongAndSecureForHS512!!!
+  secret: ${JWT_SECRET:ThisIsAReallyLongAndSecureSecretForHS512SignatureWhichIsOver48BytesLong!!!}
   expiration: 86400000
 
 logging:
@@ -34,3 +31,7 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+card:
+  encryption:
+    key: ${CARD_ENCRYPTION_KEY:ThisIsA32ByteLongSecretKeyForAES!}
