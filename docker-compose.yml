@@ -28,7 +28,7 @@ services:
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
       JWT_SECRET: ThisIsAReallyLongAndSecureSecretForHS512SignatureWhichIsOver48BytesLong!!!
-      CARD_ENCRYPTION_KEY: YourSecure32CharEncryptionKeyHere!
+      CARD_ENCRYPTION_KEY: "A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6"
     depends_on:
       postgres:
         condition: service_healthy
