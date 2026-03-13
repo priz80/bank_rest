@@ -16,14 +16,20 @@ public class CardUtil {
     private SecretKey key;
 
     public CardUtil(@Value("${card.encryption.key}") String encryptionKey) {
-    if (encryptionKey == null || encryptionKey.length() < 32) {
-        throw new IllegalArgumentException("Ключ шифрования должен быть не менее 32 символов");
+
+        System.out.println("🔐 Получен ключ шифрования: '" + encryptionKey + "'");
+        System.out.println("🔐 Длина ключа: " + (encryptionKey != null ? encryptionKey.length() : "null"));
+
+        if (encryptionKey == null || encryptionKey.length() < 32) {
+            throw new IllegalArgumentException("Ключ шифрования должен быть не менее 32 символов");
+        }
+        byte[] keyBytes = encryptionKey.getBytes(StandardCharsets.UTF_8);
+        byte[] truncatedKey = new byte[32];
+        System.arraycopy(keyBytes, 0, truncatedKey, 0, truncatedKey.length);
+        this.key = new SecretKeySpec(truncatedKey, "AES");
+
+        System.out.println("✅ CardUtil инициализирован успешно");
     }
-    byte[] keyBytes = encryptionKey.getBytes(StandardCharsets.UTF_8);
-    byte[] truncatedKey = new byte[32];
-    System.arraycopy(keyBytes, 0, truncatedKey, 0, truncatedKey.length);
-    this.key = new SecretKeySpec(truncatedKey, "AES");
-}
 
     public String encrypt(String cardNumber) {
         try {
