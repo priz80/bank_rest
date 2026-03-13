@@ -23,8 +23,6 @@ public class JwtUtil {
         if (secret == null || secret.isEmpty()) {
             throw new IllegalArgumentException("JWT secret cannot be null or empty");
         }
-        System.out.println("🔐 RAW JWT Secret: '" + secret + "'");
-        System.out.println("🔐 JWT Secret length: " + secret.length());
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
     }
@@ -80,5 +78,4 @@ public class JwtUtil {
                 extractedUsername.equals(username) &&
                 !isTokenExpired(token));
     }
-
 }
