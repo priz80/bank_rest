@@ -8,6 +8,7 @@ import com.example.bankcards.exception.CardException;
 import com.example.bankcards.repository.CardRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.bankcards.exception.TransferException;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -20,6 +21,24 @@ public class TransferService {
 
     public TransferService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
+    }
+
+    public void transfer(TransferRequest request) {
+        Card fromCard = cardRepository.findById(request.getFromCardId())
+                .orElseThrow(() -> new TransferException("Исходящая карта не найдена"));
+
+        Card toCard = cardRepository.findById(request.getToCardId())
+                .orElseThrow(() -> new TransferException("Входящая карта не найдена"));
+
+        if (fromCard.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new TransferException("Недостаточно средств на карте отправителя");
+        }
+
+        fromCard.setBalance(fromCard.getBalance().subtract(request.getAmount()));
+        toCard.setBalance(toCard.getBalance().add(request.getAmount()));
+
+        cardRepository.save(fromCard);
+        cardRepository.save(toCard);
     }
 
     public void transfer(TransferRequest request, User user) {
