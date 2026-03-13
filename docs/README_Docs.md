@@ -39,7 +39,7 @@
 ---
 ## 🔐 Аутентификация
 #### Аутентифицирует пользователя и возвращает JWT токен.
-```POST /api/auth/login```
+<span style="background-color: red;">POST<span> ```/api/auth/login```
 
 **Запрос**
 ```json
