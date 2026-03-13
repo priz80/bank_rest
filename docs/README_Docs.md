@@ -26,15 +26,15 @@
 
 ### Запрос
 
-```JSON
+
 {
   "username": "string",
   "password": "string"
-}```
+}
 
 #### Ответ (200 OK)
 
-JSON
+
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.x...",
   "userId": 1,
@@ -58,7 +58,7 @@ page	integer	0	Номер страницы
 size	integer	10	Размер страницы
 sort	string	id,asc	Поле и направление: id,desc, expiryDate,asc
 Ответ (200 OK)
-JSON
+
 {
   "content": [
     {
@@ -84,12 +84,12 @@ POST /api/cards
 
 
 Запрос
-JSON
+
 {
   "userId": 1
 }
 Ответ (200 OK)
-JSON
+
 {
   "id": 2,
   "cardNumber": "4123567890123456",
@@ -104,7 +104,7 @@ GET /api/cards/{id}
 Получить карту по ID.
 
 Ответ (200 OK)
-JSON
+
 {
   "id": 1,
   "cardNumber": "1234 **** **** 5678",
@@ -121,7 +121,7 @@ POST /api/cards/{id}/block
 Заблокировать карту.
 
 Ответ (200 OK)
-JSON
+
 {
   "id": 1,
   "status": "BLOCKED",
@@ -134,7 +134,7 @@ POST /api/cards/{id}/activate
 Активировать карту.
 
 Ответ (200 OK)
-JSON
+
 {
   "id": 1,
   "status": "ACTIVE",
@@ -154,7 +154,7 @@ POST /api/cards/transfers
 Перевод средств между своими картами.
 
 Запрос
-JSON
+
 {
   "fromCardId": 1,
   "toCardId": 2,
@@ -174,7 +174,7 @@ page	integer	0	Страница
 size	integer	10	Размер
 sort	string	id,asc	Поле и направление
 Ответ (200 OK)
-JSON
+
 {
   "content": [
     {
@@ -193,7 +193,7 @@ GET /api/admin/users/{id}
 Получить пользователя по ID.
 
 Ответ (200 OK)
-JSON
+
 {
   "id": 1,
   "username": "ivan",
@@ -206,13 +206,13 @@ POST /api/admin/users
 Создать нового пользователя.
 
 Запрос
-JSON
+
 {
   "username": "anna",
   "password": "secret123"
 }
 Ответ (200 OK)
-JSON
+
 {
   "id": 2,
   "username": "anna",
@@ -228,7 +228,7 @@ PUT /api/admin/users/{id}/status
 Параметр	Описание
 status	ACTIVE, BLOCKED, DELETED
 Ответ (200 OK)
-JSON
+
 {
   "id": 1,
   "status": "BLOCKED"
@@ -255,7 +255,7 @@ page	integer	0	Страница
 size	integer	10	Размер
 sort	string	id,asc	Поле и направление
 Ответ (200 OK)
-JSON
+
 {
   "content": [
     {
@@ -277,7 +277,7 @@ JSON
 Пагинация
 Все списковые ответы используют формат Page<T>:
 
-JSON
+
 {
   "content": [...],
   "totalElements": 100,
