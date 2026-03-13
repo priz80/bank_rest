@@ -32,7 +32,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Card> cards;
 
-    // Геттеры и сеттеры нужны для Hibernate / Jackson
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
