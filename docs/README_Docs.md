@@ -19,6 +19,7 @@
   - [🔐 Авторизация](#-авторизация)
   - [📘 Swagger UI](#-swagger-ui)
 
+---
 ## 🔐 Аутентификация
 
 POST /api/auth/login
@@ -45,7 +46,7 @@ POST /api/auth/login
 
 **Ошибки**
 - 401 Unauthorized — Неверные логин или пароль
-
+---
 ## 🃏 Карты (доступно для USER и ADMIN)
 
 GET /api/cards
