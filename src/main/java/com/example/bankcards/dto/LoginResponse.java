@@ -13,7 +13,6 @@ public class LoginResponse {
         this.role = role;
     }
 
-    // геттеры и сеттеры
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
     public Long getUserId() { return userId; }
