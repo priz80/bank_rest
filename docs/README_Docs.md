@@ -16,8 +16,12 @@
   - [🧩 Формат ответов](#-формат-ответов)
     - [Пагинация](#пагинация)
   - [❌ Коды ошибок](#-коды-ошибок)
+- [| 500 Internal Server Error | Внутренняя ошибка сервера |](#-500-internal-server-error--внутренняя-ошибка-сервера-)
   - [🔐 Авторизация](#-авторизация)
+- [Токен получается при входе.](#токен-получается-при-входе)
   - [📘 Swagger UI](#-swagger-ui)
+- [👉 http://localhost:8080/swagger-ui.html](#-httplocalhost8080swagger-uihtml)
+- [✅ API полностью протестировано, безопасно, готово к интеграции.](#-api-полностью-протестировано-безопасно-готово-к-интеграции)
 
 ---
 ## 🔐 Аутентификация
@@ -81,8 +85,8 @@
   "size": 10
 }
 ```
-
-POST /api/cards
+---
+```POST /api/cards```
 
 Создать новую карту для текущего пользователя.
 
@@ -108,8 +112,8 @@ POST /api/cards
   "userId": 1
 }
 ```
-
-GET /api/cards/{id}
+---
+```GET /api/cards/{id}```
 
 Получить карту по ID.
 
@@ -129,8 +133,8 @@ GET /api/cards/{id}
 **Ошибки**
 - 404 Not Found — Карта не найдена или не принадлежит пользователю
 - 403 Forbidden — Доступ запрещён
-
-POST /api/cards/{id}/block
+---
+```POST /api/cards/{id}/block```
 
 Заблокировать карту.
 
@@ -146,8 +150,8 @@ POST /api/cards/{id}/block
 **Ошибки**
 - 400 Bad Request — Карта уже заблокирована
 - 404 Not Found — Карта не найдена
-
-POST /api/cards/{id}/activate
+---
+```POST /api/cards/{id}/activate```
 
 Активировать карту.
 
@@ -163,8 +167,8 @@ POST /api/cards/{id}/activate
 **Ошибки**
 - 400 Bad Request — Карта уже активна или просрочена
 - 404 Not Found — Карта не найдена
-
-DELETE /api/cards/{id}
+---
+```DELETE /api/cards/{id}```
 
 Удалить карту (только если статус ≠ ACTIVE и баланс = 0).
 
@@ -173,8 +177,8 @@ DELETE /api/cards/{id}
 **Ошибки**
 - 400 Bad Request — Карта активна или на ней есть средства
 - 404 Not Found — Карта не найдена
-
-POST /api/cards/transfers
+---
+```POST /api/cards/transfers```
 
 Перевод средств между своими картами.
 
@@ -194,8 +198,8 @@ POST /api/cards/transfers
 - 403 Forbidden — Карты не принадлежат пользователю
 
 ## 👮 Администрирование (только ADMIN)
-
-GET /api/admin/users
+---
+```GET /api/admin/users```
 
 Получить всех пользователей.
 
@@ -225,8 +229,8 @@ GET /api/admin/users
   "size": 10
 }
 ```
-
-GET /api/admin/users/{id}
+---
+```GET /api/admin/users/{id}```
 
 Получить пользователя по ID.
 
@@ -242,8 +246,8 @@ GET /api/admin/users/{id}
 
 **Ошибки**
 - 404 Not Found — Пользователь не найден
-
-POST /api/admin/users
+---
+```POST /api/admin/users```
 
 Создать нового пользователя.
 
@@ -267,8 +271,8 @@ POST /api/admin/users
 
 **Ошибки**
 - 400 Bad Request — Пользователь с таким именем уже существует
-
-PUT /api/admin/users/{id}/status
+---
+```PUT /api/admin/users/{id}/status```
 
 Изменить статус пользователя.
 
@@ -289,8 +293,8 @@ PUT /api/admin/users/{id}/status
 **Ошибки**
 - 400 Bad Request — Некорректный статус
 - 404 Not Found — Пользователь не найден
-
-DELETE /api/admin/users/{id}
+---
+```DELETE /api/admin/users/{id}```
 
 Удалить пользователя из БД.
 
@@ -303,8 +307,8 @@ DELETE /api/admin/users/{id}
 **Ошибки**
 - 400 Bad Request — Пользователь не в статусе DELETED или есть карты
 - 404 Not Found — Пользователь не найден
-
-GET /api/admin/cards
+---
+```GET /api/admin/cards```
 
 Получить все карты системы.
 
@@ -336,7 +340,7 @@ GET /api/admin/cards
   "size": 10
 }
 ```
-
+===
 ## 🧩 Формат ответов
 
 ### Пагинация
@@ -352,7 +356,7 @@ GET /api/admin/cards
   "size": 10
 }
 ```
-
+===
 ## ❌ Коды ошибок
 
 | Код | Описание |
@@ -362,7 +366,7 @@ GET /api/admin/cards
 | 403 Forbidden | Доступ запрещён (не та роль) |
 | 404 Not Found | Ресурс не найден |
 | 500 Internal Server Error | Внутренняя ошибка сервера |
-
+===
 ## 🔐 Авторизация
 
 Все эндпоинты (кроме /api/auth/login) требуют заголовка:
@@ -371,13 +375,13 @@ GET /api/admin/cards
 Authorization: Bearer <ваш_jwt_токен>
 ```
 Токен получается при входе.
-
+===
 ## 📘 Swagger UI
 
 Полная интерактивная документация доступна по адресу:
 
 👉 http://localhost:8080/swagger-ui.html
-
+===
 ✅ API полностью протестировано, безопасно, готово к интеграции.
-
+===
 📅 Обновлено: 2026г.
