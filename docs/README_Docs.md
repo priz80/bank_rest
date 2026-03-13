@@ -32,6 +32,8 @@
   "password": "string"
 }```
 
+---
+
 #### Ответ (200 OK)
 
 JSON
