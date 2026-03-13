@@ -22,7 +22,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    public record ErrorResponse(String message) {}
+    public record ErrorResponse(String message) {
+    }
 
     @ExceptionHandler(CardException.class)
     public ResponseEntity<ErrorResponse> handleCardException(CardException e) {
@@ -71,6 +72,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
         String name = e.getName();
         String value = e.getValue() != null ? e.getValue().toString() : "null";
+
         String msg = "Invalid value '" + value + "' for parameter '" + name + "'. Must be a valid number.";
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(msg));
