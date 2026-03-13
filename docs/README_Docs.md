@@ -24,21 +24,21 @@
 
 ### Запрос
 
-```JSON
+JSON
 {
   "username": "string",
   "password": "string"
-}```
+}
 
 #### Ответ (200 OK)
 
-```JSON
+JSON
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.x...",
   "userId": 1,
   "username": "ivan",
   "role": "USER"
-}```
+}
 
 #### Ошибки
 
