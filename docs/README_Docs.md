@@ -39,7 +39,7 @@
 ---
 ## 🔐 Аутентификация
 #### Аутентифицирует пользователя и возвращает JWT токен.
-<span style="background-color: red;">POST<span> ```/api/auth/login```
+```POST /api/auth/login```
 
 **Запрос**
 ```json
@@ -64,7 +64,7 @@
 ---
 ## 🃏 Карты (доступно для USER и ADMIN)
 #### Получить свои карты с пагинацией.
-```GET /api/cards```
+==GET== ```/api/cards```
 
 **Параметры**
 
