@@ -10,6 +10,7 @@ import com.example.bankcards.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -18,10 +19,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final CardRepository cardRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, CardRepository cardRepository) {
+    public UserService(UserRepository userRepository,
+            CardRepository cardRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.cardRepository = cardRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User getUserEntityByUsername(String username) {
@@ -45,13 +50,13 @@ public class UserService {
                 .orElseThrow(() -> new UserException("Пользователь не найден с ID: " + id));
     }
 
-    public User createUser(String username, String encodedPassword) {
+    public User createUser(String username, String password) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new UserException("Пользователь с таким именем уже существует");
         }
         User user = new User();
         user.setUsername(username);
-        user.setPassword(encodedPassword);
+        user.setPassword(passwordEncoder.encode(password));
         user.setRole(Role.USER);
         user.setStatus(Status.ACTIVE);
         return userRepository.save(user);
