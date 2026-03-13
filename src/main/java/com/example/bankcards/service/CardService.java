@@ -27,9 +27,9 @@ public class CardService {
     private final CardGenerator cardGenerator;
 
     public CardService(CardRepository cardRepository,
-            UserRepository userRepository,
-            CardUtil cardUtil,
-            CardGenerator cardGenerator) {
+                       UserRepository userRepository,
+                       CardUtil cardUtil,
+                       CardGenerator cardGenerator) {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
         this.cardUtil = cardUtil;
@@ -37,24 +37,12 @@ public class CardService {
     }
 
     public CardDto createCardForUser(Long userId) {
-        System.out.println("🔧 Создание карты для пользователя ID: " + userId);
-
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException("Пользователь не найден" + userId));
-
-        System.out.println("✅ Найден пользователь: " + user.getUsername() + ", статус: " + user.getStatus());
+                .orElseThrow(() -> new UserException("Пользователь не найден: " + userId));
 
         if (user.getStatus() != User.Status.ACTIVE) {
             throw new CardException("Нельзя создать карту для неактивного пользователя");
         }
-
-        String cardNumber = cardGenerator.generateCardNumber();
-        String cvv = cardGenerator.generateCvv();
-        LocalDate expiryDate = cardGenerator.calculateExpiryDate();
-
-        System.out.println("🔢 Сгенерирован номер карты: " + cardNumber);
-        System.out.println("🔐 CVV: " + cvv);
-        System.out.println("📅 Срок действия: " + expiryDate);
 
         Card card = new Card();
         card.setCardNumber(cardGenerator.generateCardNumber());
@@ -65,15 +53,8 @@ public class CardService {
         card.setBalance(BigDecimal.ZERO);
         card.setUser(user);
 
-        try {
-            Card saved = cardRepository.save(card);
-            System.out.println("💾 Карта сохранена, ID: " + saved.getId());
-            return toDto(saved);
-        } catch (Exception e) {
-            System.err.println("❌ Ошибка при сохранении карты: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
+        Card saved = cardRepository.save(card);
+        return toDto(saved);
     }
 
     public Page<CardDto> getCardsByUser(User user, Pageable pageable) {
@@ -98,8 +79,7 @@ public class CardService {
         }
 
         card.setStatus(CardStatus.BLOCKED);
-        Card updated = cardRepository.save(card);
-        return toDto(updated);
+        return toDto(cardRepository.save(card));
     }
 
     public CardDto activateCard(Long id, User user) {
@@ -111,8 +91,7 @@ public class CardService {
         }
 
         card.setStatus(CardStatus.ACTIVE);
-        Card updated = cardRepository.save(card);
-        return toDto(updated);
+        return toDto(cardRepository.save(card));
     }
 
     public void deleteCard(Long id, User user) {
@@ -126,23 +105,49 @@ public class CardService {
         cardRepository.delete(card);
     }
 
-    public Card getCardEntityById(Long id) {
-        return cardRepository.findById(id)
-                .orElseThrow(() -> new CardException("Карта не найдена"));
+    public CardDto getCardById(Long id) {
+        Card card = getCardEntityById(id);
+        return toDto(card);
+    }
+
+    public CardDto blockCard(Long id) {
+        Card card = getCardEntityById(id);
+
+        if (card.getStatus() == CardStatus.BLOCKED) {
+            throw new CardException("Карта уже заблокирована");
+        }
+
+        card.setStatus(CardStatus.BLOCKED);
+        return toDto(cardRepository.save(card));
+    }
+
+    public CardDto activateCard(Long id) {
+        Card card = getCardEntityById(id);
+
+        if (card.getStatus() == CardStatus.ACTIVE) {
+            throw new CardException("Карта уже активна");
+        }
+
+        card.setStatus(CardStatus.ACTIVE);
+        return toDto(cardRepository.save(card));
+    }
+
+    public void deleteCard(Long id) {
+        Card card = getCardEntityById(id);
+
+        if (card.getStatus() == CardStatus.ACTIVE) {
+            throw new CardException("Нельзя удалить активную карту");
+        }
+
+        cardRepository.delete(card);
+    }
+
+    public Page<CardDto> getAllCards(Pageable pageable) {
+        return cardRepository.findAll(pageable).map(this::toDto);
     }
 
     public boolean isCardExpired(Card card) {
-        if (card.getExpiryDate() == null) {
-            return false;
-        }
-        return card.getExpiryDate().isBefore(LocalDate.now());
-    }
-
-    public void markAsExpired(Card card) {
-        if (card.getStatus() != CardStatus.EXPIRED) {
-            card.setStatus(CardStatus.EXPIRED);
-            cardRepository.save(card);
-        }
+        return card.getExpiryDate() != null && card.getExpiryDate().isBefore(LocalDate.now());
     }
 
     @Scheduled(cron = "0 0 1 * * ?")
@@ -151,37 +156,33 @@ public class CardService {
         expiredCards.forEach(this::markAsExpired);
     }
 
-    private CardDto toDto(Card card) {
-    System.out.println("🔧 Конвертация карты в DTO: ID=" + card.getId());
-    System.out.println("🔢 Номер карты: " + (card.getCardNumber() != null ? "не null" : "null"));
-
-    CardDto dto = new CardDto();
-    dto.setId(card.getId());
-    
-    try {
-        dto.setMaskedCardNumber(cardUtil.mask(card.getCardNumber()));
-        System.out.println("✅ Маскировка успешна");
-    } catch (Exception e) {
-        System.err.println("❌ Ошибка маскировки номера карты: " + e.getMessage());
-        e.printStackTrace();
-        throw e;
-    }
-
-    dto.setCardHolderName(card.getCardHolderName());
-    dto.setExpiryDate(card.getExpiryDate() != null ? YearMonth.from(card.getExpiryDate()) : null);
-    dto.setStatus(card.getStatus());
-    dto.setBalance(card.getBalance());
-    dto.setUserId(card.getUser().getId());
-    return dto;
-}
-
-    public void checkAccess(Card card, User user) {
-        if (!card.getUser().getId().equals(user.getId()) && !Role.ADMIN.equals(user.getRole())) {
-            throw new CardException("Доступ запрещён");
+    private void markAsExpired(Card card) {
+        if (card.getStatus() != CardStatus.EXPIRED) {
+            card.setStatus(CardStatus.EXPIRED);
+            cardRepository.save(card);
         }
     }
 
-    public Page<CardDto> getAllCards(Pageable pageable) {
-        return cardRepository.findAll(pageable).map(this::toDto);
+    private Card getCardEntityById(Long id) {
+        return cardRepository.findById(id)
+                .orElseThrow(() -> new CardException("Карта не найдена"));
+    }
+
+    private CardDto toDto(Card card) {
+        CardDto dto = new CardDto();
+        dto.setId(card.getId());
+        dto.setMaskedCardNumber(cardUtil.mask(card.getCardNumber()));
+        dto.setCardHolderName(card.getCardHolderName());
+        dto.setExpiryDate(card.getExpiryDate() != null ? YearMonth.from(card.getExpiryDate()) : null);
+        dto.setStatus(card.getStatus());
+        dto.setBalance(card.getBalance());
+        dto.setUserId(card.getUser().getId());
+        return dto;
+    }
+
+    private void checkAccess(Card card, User user) {
+        if (!card.getUser().getId().equals(user.getId()) && !Role.ADMIN.equals(user.getRole())) {
+            throw new CardException("Доступ запрещён");
+        }
     }
 }
