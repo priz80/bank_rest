@@ -1,1 +1,378 @@
-\n\n# Документация\n\nПроект: Управление банковскими картами\n\nВерсия: 1.0.0\n\nБазовый URL: http://localhost:8080\n\n---\n\n## 📘 Содержание\n\n- Аутентификация\n- Карты (USER и ADMIN)\n- Администрирование (только ADMIN)\n- Формат ответов\n- Коды ошибок\n- Авторизация\n\n---\n\n## 🔐 Аутентификация\n\n### POST /api/auth/login\n\nАутентифицирует пользователя и возвращает JWT токен.\n\nЗапрос\njson\n{\n  \"username\": \"string\",\n  \"password\": \"string\"\n}\n\n\nОтвет (200 OK)\njson\n{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.x...\",\n  \"userId\": 1,\n  \"username\": \"ivan\",\n  \"role\": \"USER\"\n}\n\n\nОшибки\n- 401 Unauthorized — Неверные логин или пароль\n\n---\n\n## 🃏 Карты (доступно для USER и ADMIN)\n\n### GET /api/cards\n\nПолучить свои карты с пагинацией.\n\nПараметры\n\n| Параметр | Тип | По умолчанию | Описание |\n|----------|-----|--------------|----------|\n| page | integer | 0 | Номер страницы |\n| size | integer | 10 | Размер страницы |\n| sort | string | id,asc | Поле и направление: id,desc, expiryDate,asc |\n\nОтвет (200 OK)\njson\n{\n  \"content\": [\n    {\n      \"id\": 1,\n      \"cardNumber\": \"1234 **** **** 5678\",\n      \"cardHolderName\": \"IVAN PETROV\",\n      \"expiryDate\": \"2029-01-01\",\n      \"status\": \"ACTIVE\",\n      \"balance\": 5000.00,\n      \"userId\": 1\n    }\n  ],\n  \"totalElements\": 1,\n  \"totalPages\": 1,\n  \"number\": 0,\n  \"size\": 10\n}\n\n\n### POST /api/cards\n\nСоздать новую карту для текущего пользователя.\n\n> ⚠️ Только владелец или ADMIN может создать.\n\nЗапрос\njson\n{\n  \"userId\": 1\n}\n\n\nОтвет (200 OK)\njson\n{\n  \"id\": 2,\n  \"cardNumber\": \"4123567890123456\",\n  \"cardHolderName\": \"IVAN PETROV\",\n  \"cvv\": \"123\",\n  \"expiryDate\": \"2029-01-01\",\n  \"status\": \"ACTIVE\",\n  \"balance\": 0.00,\n  \"userId\": 1\n}\n\n\n### GET /api/cards/{id}\n\nПолучить карту по ID.\n\nОтвет (200 OK)\njson\n{\n  \"id\": 1,\n  \"cardNumber\": \"1234 **** **** 5678\",\n  \"cardHolderName\": \"IVAN PETROV\",\n  \"expiryDate\": \"2029-01-01\",\n  \"status\": \"ACTIVE\",\n  \"balance\": 5000.00,\n  \"userId\": 1\n}\n\n\nОшибки\n- 404 Not Found — Карта не найдена или не принадлежит пользователю\n- 403 Forbidden — Доступ запрещён\n\n### POST /api/cards/{id}/block\n\nЗаблокировать карту.\n\nОтвет (200 OK)\njson\n{\n  \"id\": 1,\n  \"status\": \"BLOCKED\",\n  \"balance\": 5000.00\n}\n\n\nОшибки\n- 400 Bad Request — Карта уже заблокирована\n- 404 Not Found — Карта не найдена\n\n### POST /api/cards/{id}/activate\n\nАктивировать карту.\n\nОтвет (200 OK)\njson\n{\n  \"id\": 1,\n  \"status\": \"ACTIVE\",\n  \"balance\": 5000.00\n}\n\n\nОшибки\n- 400 Bad Request — Карта уже активна или просрочена\n- 404 Not Found — Карта не найдена\n\n### DELETE /api/cards/{id}\n\nУдалить карту (только если статус ≠ ACTIVE и баланс = 0).\n\nОтвет (204 No Content)\n\nОшибки\n- 400 Bad Request — Карта активна или на ней есть средства\n- 404 Not Found — Карта не найдена\n\n### POST /api/cards/transfers\n\nПеревод средств между своими картами.\n\nЗапрос\njson\n{\n  \"fromCardId\": 1,\n  \"toCardId\": 2,\n  \"amount\": 100.00\n}\n\n\nОтвет (200 OK) — пустой\n\nОшибки\n- 400 Bad Request — Недостаточно средств, карта не найдена, сумма ≤ 0\n- 403 Forbidden — Карты не принадлежат пользователю\n\n---\n\n## 👮 Администрирование (только ADMIN)\n\n### GET /api/admin/users\n\nПолучить всех пользователей.\n\nПараметры\n\n| Параметр | Тип | По умолчанию | Описание |\n|----------|-----|--------------|----------|\n| page | integer | 0 | Страница |\n| size | integer | 10 | Размер |\n| sort | string | id,asc | Поле и направление |\n\nОтвет (200 OK)\njson\n{\n  \"content\": [\n    {\n      \"id\": 1,\n      \"username\": \"ivan\",\n      \"role\": \"USER\",\n      \"status\": \"ACTIVE\"\n    }\n  ],\n  \"totalElements\": 1,\n  \"totalPages\": 1,\n  \"number\": 0,\n  \"size\": 10\n}\n\n\n### GET /api/admin/users/{id}\n\nПолучить пользователя по ID.\n\nОтвет (200 OK)\njson\n{\n  \"id\": 1,\n  \"username\": \"ivan\",\n  \"role\": \"USER\",\n  \"status\": \"ACTIVE\"\n}\n\n\nОшибки\n- 404 Not Found — Пользователь не найден\n\n### POST /api/admin/users\n\nСоздать нового пользователя.\n\nЗапрос\njson\n{\n  \"username\": \"anna\",\n  \"password\": \"secret123\"\n}\n\n\nОтвет (200 OK)\njson\n{\n  \"id\": 2,\n  \"username\": \"anna\",\n  \"role\": \"USER\",\n  \"status\": \"ACTIVE\"\n}\n\n\nОшибки\n- 400 Bad Request — Пользователь с таким именем уже существует\n\n### PUT /api/admin/users/{id}/status\n\nИзменить статус пользователя.\n\nПараметры\n\n| Параметр | Описание |\n|----------|----------|\n| status | ACTIVE, BLOCKED, DELETED |\n\nОтвет (200 OK)\njson\n{\n  \"id\": 1,\n  \"status\": \"BLOCKED\"\n}\n\n\nОшибки\n- 400 Bad Request — Некорректный статус\n- 404 Not Found — Пользователь не найден\n\n### DELETE /api/admin/users/{id}\n\nУдалить пользователя из БД.\n\nУсловия:\n- Статус должен быть DELETED\n- У пользователя не должно быть карт\n\nОтвет (204 No Content)\n\nОшибки\n- 400 Bad Request — Пользователь не в статусе DELETED или есть карты\n- 404 Not Found — Пользователь не найден\n\n### GET /api/admin/cards\n\nПолучить все карты системы.\n\nПараметры\n\n| Параметр | Тип | По умолчанию | Описание |\n|----------|-----|--------------|----------|\n| page | integer | 0 | Страница |\n| size | integer | 10 | Размер |\n| sort | string | id,asc | Поле и направление |\n\nОтвет (200 OK)\njson\n{\n  \"content\": [\n    {\n      \"id\": 1,\n      \"cardNumber\": \"1234 **** **** 5678\",\n      \"cardHolderName\": \"IVAN PETROV\",\n      \"expiryDate\": \"2029-01-01\",\n      \"status\": \"ACTIVE\",\n      \"balance\": 5000.00,\n      \"userId\": 1\n    }\n  ],\n  \"totalElements\": 1,\n  \"totalPages\": 1,\n  \"number\": 0,\n  \"size\": 10\n}\n\n\n---\n\n## 🧩 Формат ответов\n\n### Пагинация\n\nВсе списковые ответы используют формат Page<T>:\n\njson\n{\n  \"content\": [...],\n  \"totalElements\": 100,\n  \"totalPages\": 10,\n  \"number\": 0,\n  \"size\": 10\n}\n\n\n---\n\n## ❌ Коды ошибок\n\n| Код | Описание |\n|-----|--------|\n| 400 Bad Request | Некорректные данные, бизнес-ограничение |\n| 401 Unauthorized | Необходима аутентификация |\n| 403 Forbidden | Доступ запрещён (не та роль) |\n| 404 Not Found | Ресурс не найден |\n| 500 Internal Server Error | Внутренняя ошибка сервера |\n\n---\n\n## 🔐 Авторизация\n\nВсе эндпоинты (кроме /api/auth/login) требуют заголовка:\n\n\nAuthorization: Bearer <ваш_jwt_токен>\n\n\nТокен получается при входе.\n\n---\n\n## 📘 Swagger UI\n\nПолная интерактивная документация доступна по адресу:\n\n👉 http://localhost:8080/swagger-ui.html\n\n✅ API полностью протестировано, безопасно, готово к интеграции.\n\n📅 Обновлено: 2026г."
+# Документация
+
+**Проект:** Управление банковскими картами
+
+**Версия:** 1.0.0
+
+**Базовый URL:** `http://localhost:8080`
+
+## Содержание
+
+- [Аутентификация](#-аутентификация)
+- [Карты (USER и ADMIN)](#-карты-dostupno-dlya-user-i-admin)
+- [Администрирование (только ADMIN)](#-администрирование-tolko-admin)
+- [Формат ответов](#-формат-ответов)
+- [Коды ошибок](#-коды-ошибок)
+- [Авторизация](#-авторизация)
+
+## 🔐 Аутентификация
+
+POST /api/auth/login
+
+Аутентифицирует пользователя и возвращает JWT токен.
+
+**Запрос**
+```json
+{
+  "username": "string",
+  "password": "string"
+}
+```
+
+**Ответ (200 OK)**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.x...",
+  "userId": 1,
+  "username": "ivan",
+  "role": "USER"
+}
+```
+
+**Ошибки**
+- 401 Unauthorized — Неверные логин или пароль
+
+## 🃏 Карты (доступно для USER и ADMIN)
+
+GET /api/cards
+
+Получить свои карты с пагинацией.
+
+**Параметры**
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| page | integer | 0 | Номер страницы |
+| size | integer | 10 | Размер страницы |
+| sort | string | id,asc | Поле и направление: id,desc, expiryDate,asc |
+
+**Ответ (200 OK)**
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "cardNumber": "1234 **** **** 5678",
+      "cardHolderName": "IVAN PETROV",
+      "expiryDate": "2029-01-01",
+      "status": "ACTIVE",
+      "balance": 5000.00,
+      "userId": 1
+    }
+  ],
+  "totalElements": 1,
+  "totalPages": 1,
+  "number": 0,
+  "size": 10
+}
+```
+
+POST /api/cards
+
+Создать новую карту для текущего пользователя.
+
+> ⚠️ Только владелец или ADMIN может создать.
+
+**Запрос**
+```json
+{
+  "userId": 1
+}
+```
+
+**Ответ (200 OK)**
+```json
+{
+  "id": 2,
+  "cardNumber": "4123567890123456",
+  "cardHolderName": "IVAN PETROV",
+  "cvv": "123",
+  "expiryDate": "2029-01-01",
+  "status": "ACTIVE",
+  "balance": 0.00,
+  "userId": 1
+}
+```
+
+GET /api/cards/{id}
+
+Получить карту по ID.
+
+**Ответ (200 OK)**
+```json
+{
+  "id": 1,
+  "cardNumber": "1234 **** **** 5678",
+  "cardHolderName": "IVAN PETROV",
+  "expiryDate": "2029-01-01",
+  "status": "ACTIVE",
+  "balance": 5000.00,
+  "userId": 1
+}
+```
+
+**Ошибки**
+- 404 Not Found — Карта не найдена или не принадлежит пользователю
+- 403 Forbidden — Доступ запрещён
+
+POST /api/cards/{id}/block
+
+Заблокировать карту.
+
+**Ответ (200 OK)**
+```json
+{
+  "id": 1,
+  "status": "BLOCKED",
+  "balance": 5000.00
+}
+```
+
+**Ошибки**
+- 400 Bad Request — Карта уже заблокирована
+- 404 Not Found — Карта не найдена
+
+POST /api/cards/{id}/activate
+
+Активировать карту.
+
+**Ответ (200 OK)**
+```json
+{
+  "id": 1,
+  "status": "ACTIVE",
+  "balance": 5000.00
+}
+```
+
+**Ошибки**
+- 400 Bad Request — Карта уже активна или просрочена
+- 404 Not Found — Карта не найдена
+
+DELETE /api/cards/{id}
+
+Удалить карту (только если статус ≠ ACTIVE и баланс = 0).
+
+**Ответ (204 No Content)**
+
+**Ошибки**
+- 400 Bad Request — Карта активна или на ней есть средства
+- 404 Not Found — Карта не найдена
+
+POST /api/cards/transfers
+
+Перевод средств между своими картами.
+
+**Запрос**
+```json
+{
+  "fromCardId": 1,
+  "toCardId": 2,
+  "amount": 100.00
+}
+```
+
+**Ответ (200 OK) — пустой**
+
+**Ошибки**
+- 400 Bad Request — Недостаточно средств, карта не найдена, сумма ≤ 0
+- 403 Forbidden — Карты не принадлежат пользователю
+
+## 👮 Администрирование (только ADMIN)
+
+GET /api/admin/users
+
+Получить всех пользователей.
+
+**Параметры**
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| page | integer | 0 | Страница |
+| size | integer | 10 | Размер |
+| sort | string | id,asc | Поле и направление |
+
+
+**Ответ (200 OK)**
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "username": "ivan",
+      "role": "USER",
+      "status": "ACTIVE"
+    }
+  ],
+  "totalElements": 1,
+  "totalPages": 1,
+  "number": 0,
+  "size": 10
+}
+```
+
+GET /api/admin/users/{id}
+
+Получить пользователя по ID.
+
+**Ответ (200 OK)**
+```json
+{
+  "id": 1,
+  "username": "ivan",
+  "role": "USER",
+  "status": "ACTIVE"
+}
+```
+
+**Ошибки**
+- 404 Not Found — Пользователь не найден
+
+POST /api/admin/users
+
+Создать нового пользователя.
+
+**Запрос**
+```json
+{
+  "username": "anna",
+  "password": "secret123"
+}
+```
+
+**Ответ (200 OK)**
+```json
+{
+  "id": 2,
+  "username": "anna",
+  "role": "USER",
+  "status": "ACTIVE"
+}
+```
+
+**Ошибки**
+- 400 Bad Request — Пользователь с таким именем уже существует
+
+PUT /api/admin/users/{id}/status
+
+Изменить статус пользователя.
+
+**Параметры**
+
+| Параметр | Описание |
+|----------|----------|
+| status | ACTIVE, BLOCKED, DELETED |
+
+**Ответ (200 OK)**
+```json
+{
+  "id": 1,
+  "status": "BLOCKED"
+}
+```
+
+**Ошибки**
+- 400 Bad Request — Некорректный статус
+- 404 Not Found — Пользователь не найден
+
+DELETE /api/admin/users/{id}
+
+Удалить пользователя из БД.
+
+**Условия:**
+- Статус должен быть DELETED
+- У пользователя не должно быть карт
+
+**Ответ (204 No Content)**
+
+**Ошибки**
+- 400 Bad Request — Пользователь не в статусе DELETED или есть карты
+- 404 Not Found — Пользователь не найден
+
+GET /api/admin/cards
+
+Получить все карты системы.
+
+**Параметры**
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| page | integer | 0 | Страница |
+| size | integer | 10 | Размер |
+| sort | string | id,asc | Поле и направление |
+
+**Ответ (200 OK)**
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "cardNumber": "1234 **** **** 5678",
+      "cardHolderName": "IVAN PETROV",
+      "expiryDate": "2029-01-01",
+      "status": "ACTIVE",
+      "balance": 5000.00,
+      "userId": 1
+    }
+  ],
+  "totalElements": 1,
+  "totalPages": 1,
+  "number": 0,
+  "size": 10
+}
+```
+
+## 🧩 Формат ответов
+
+### Пагинация
+
+Все списковые ответы используют формат Page<T>:
+
+```json
+{
+  "content": [...],
+  "totalElements": 100,
+  "totalPages": 10,
+  "number": 0,
+  "size": 10
+}
+```
+
+## ❌ Коды ошибок
+
+| Код | Описание |
+|-----|----------|
+| 400 Bad Request | Некорректные данные, бизнес-ограничение |
+| 401 Unauthorized | Необходима аутентификация |
+| 403 Forbidden | Доступ запрещён (не та роль) |
+| 404 Not Found | Ресурс не найден |
+| 500 Internal Server Error | Внутренняя ошибка сервера |
+
+## 🔐 Авторизация
+
+Все эндпоинты (кроме /api/auth/login) требуют заголовка:
+
+```
+Authorization: Bearer <ваш_jwt_токен>
+```
+Токен получается при входе.
+
+## 📘 Swagger UI
+
+Полная интерактивная документация доступна по адресу:
+
+👉 http://localhost:8080/swagger-ui.html
+
+✅ API полностью протестировано, безопасно, готово к интеграции.
+
+📅 Обновлено: 2026г.
