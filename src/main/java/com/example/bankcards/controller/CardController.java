@@ -2,19 +2,22 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.dto.TransferRequest;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.security.UserDetailsImpl;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.service.TransferService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cards")
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class CardController {
 
     private final CardService cardService;
@@ -34,10 +37,38 @@ public class CardController {
 
     @PostMapping
     public ResponseEntity<CardDto> createCard(@RequestParam Long userId, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        if (!user.getId().equals(userId) && !user.getRole().equals(com.example.bankcards.entity.Role.ADMIN)) {
-            throw new RuntimeException("Доступ запрещён");
+        System.out.println("✅ [DEBUG] CardController: Метод createCard вызван");
+        System.out.println("✅ [DEBUG] userId = " + userId);
+
+        if (authentication == null) {
+            System.err.println("❌ Authentication is null");
+            throw new RuntimeException("Аутентификация не выполнена");
         }
+
+        System.out.println("✅ [DEBUG] Authentication exists: " + authentication.getClass().getSimpleName());
+        System.out.println("✅ [DEBUG] Principal class: " + authentication.getPrincipal().getClass().getSimpleName());
+        System.out.println("✅ [DEBUG] Principal value: " + authentication.getPrincipal());
+
+        User user;
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            user = userDetails.getUser(); // ✅ Получаем User из обёртки
+        } catch (ClassCastException e) {
+            System.err.println("❌ Ошибка приведения Principal к UserDetailsImpl: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Ошибка аутентификации", e);
+        }
+
+        System.out.println("✅ [DEBUG] Текущий пользователь: " + user.getUsername() + ", роль: " + user.getRole());
+
+        boolean isOwner = user.getId().equals(userId);
+        boolean isAdmin = Role.ADMIN.equals(user.getRole());
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException("Доступ запрещён");
+        }
+
+        System.out.println("✅ [DEBUG] Проверка доступа пройдена. Вызов cardService...");
         CardDto card = cardService.createCardForUser(userId);
         return ResponseEntity.ok(card);
     }
