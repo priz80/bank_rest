@@ -2,7 +2,6 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.LoginRequest;
 import com.example.bankcards.dto.LoginResponse;
-import com.example.bankcards.dto.UserDto;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.security.CustomUserDetailsService;
 import com.example.bankcards.security.JwtUtil;
@@ -15,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -52,14 +50,5 @@ public class AuthController {
             e.printStackTrace();
             return ResponseEntity.status(401).body("Invalid credentials");
         }
-    }
-
-    @PostMapping
-    public ResponseEntity<UserDto> createUser(
-            @RequestParam String username,
-            @RequestParam String password) { // ← приходит как "password"
-
-        User created = userService.createUser(username, password); // ← передаём как rawPassword
-        return ResponseEntity.ok(userService.toDto(created));
     }
 }
