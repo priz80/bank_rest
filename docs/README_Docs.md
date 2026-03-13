@@ -4,7 +4,7 @@
 
 ---
 
-Базовый URL: (http://localhost:8080)
+Базовый URL: http://localhost:8080
 
 ---
 
@@ -26,11 +26,11 @@
 
 ### Запрос
 
-JSON
+```JSON
 {
   "username": "string",
   "password": "string"
-}
+}```
 
 #### Ответ (200 OK)
 
