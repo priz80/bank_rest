@@ -26,11 +26,13 @@
 
 ### Запрос
 
-```JSON
+JSON
+```
 {
   "username": "string",
   "password": "string"
-}```
+}
+```
 
 ---
 
