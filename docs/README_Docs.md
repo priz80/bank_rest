@@ -22,7 +22,7 @@
 ---
 ## 🔐 Аутентификация
 
-POST /api/auth/login
+'''POST /api/auth/login'''
 
 Аутентифицирует пользователя и возвращает JWT токен.
 
@@ -49,7 +49,7 @@ POST /api/auth/login
 ---
 ## 🃏 Карты (доступно для USER и ADMIN)
 
-GET /api/cards
+'''GET /api/cards'''
 
 Получить свои карты с пагинацией.
 
