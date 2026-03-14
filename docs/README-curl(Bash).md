@@ -4,14 +4,14 @@
 
 ## 🔐 1. Аутентификация
 
-**Вход (получение JWT токена)**
+### Вход (получение JWT токена)
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
-    "password": "admin123"
+    "password": "admin"
   }'
 ```
 
@@ -28,40 +28,47 @@ TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.x..."
 ```bash
 TOKEN="ваш_jwt_токен_из_ответа_выше"
 ```
-**Получить все карты авторизированного пользователя (с пагинацией)**
+
+### Получить свои карты (с пагинацией)
 
 ```bash
 curl -X GET "http://localhost:8080/api/cards?page=0&size=10&sort=id,asc" \
   -H "Authorization: Bearer $TOKEN"
 ```
-**Создать новую карту**
+
+### Создать новую карту
 
 ```bash
 curl -X POST http://localhost:8080/api/cards \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{}'
+  -d '{
+    "userId": 1
+  }'
 ```
-**Получить карту по ID**
+
+### Получить карту по ID
 
 ```bash
 curl -X GET http://localhost:8080/api/cards/1 \
   -H "Authorization: Bearer $TOKEN"
 ```
-**Заблокировать карту**
+
+### Заблокировать карту
 
 ```bash
 curl -X POST http://localhost:8080/api/cards/1/block \
   -H "Authorization: Bearer $TOKEN"
 ```
-**Активировать карту**
+
+### Активировать карту
 
 ```bash
 curl -X POST http://localhost:8080/api/cards/1/activate \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-**Перевод средств между своими картами**
+### Перевод средств между своими картами
 
 ```bash
 curl -X POST http://localhost:8080/api/cards/transfers \
@@ -73,21 +80,24 @@ curl -X POST http://localhost:8080/api/cards/transfers \
     "amount": 100.00
   }'
 ```
+
 ## 👮 3. Администрирование (только ADMIN)
 
-**Получить всех пользователей**
+### Получить всех пользователей
 
 ```bash
 curl -X GET "http://localhost:8080/api/admin/users?page=0&size=10&sort=id,asc" \
   -H "Authorization: Bearer $TOKEN"
 ```
-**Получить пользователя по ID**
+
+### Получить пользователя по ID
 
 ```bash
 curl -X GET http://localhost:8080/api/admin/users/1 \
   -H "Authorization: Bearer $TOKEN"
 ```
-**Создать нового пользователя**
+
+### Создать нового пользователя
 
 ```bash
 curl -X POST http://localhost:8080/api/admin/users \
@@ -98,7 +108,8 @@ curl -X POST http://localhost:8080/api/admin/users \
     "password": "secret123"
   }'
 ```
-**Изменить статус пользователя**
+
+### Изменить статус пользователя
 
 ```bash
 curl -X PUT http://localhost:8080/api/admin/users/1/status \
@@ -106,18 +117,62 @@ curl -X PUT http://localhost:8080/api/admin/users/1/status \
   -H "Content-Type: application/json" \
   -d '"BLOCKED"'
 ```
-**Удалить пользователя**
+
+### Удалить пользователя
 
 ```bash
 curl -X DELETE http://localhost:8080/api/admin/users/1 \
   -H "Authorization: Bearer $TOKEN"
 ```
-**Получить все карты системы**
+
+### Получить все карты системы
 
 ```bash
 curl -X GET "http://localhost:8080/api/admin/cards?page=0&size=10&sort=id,desc" \
   -H "Authorization: Bearer $TOKEN"
 ```
+
+### Заблокировать карту администратором
+
+```bash
+curl -X POST http://localhost:8080/api/admin/cards/1/block \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Активировать карту администратором
+
+```bash
+curl -X POST http://localhost:8080/api/admin/cards/1/activate \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Перевод средств между любыми картами (администратор)
+
+```bash
+curl -X POST http://localhost:8080/api/admin/cards/transfers \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromCardId": 1,
+    "toCardId": 2,
+    "amount": 100.00
+  }'
+```
+
+### Получить карту по ID (администратор)
+
+```bash
+curl -X GET http://localhost:8080/api/admin/cards/1 \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Удалить карту по ID (администратор)
+
+```bash
+curl -X DELETE http://localhost:8080/api/admin/cards/1 \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ## 🧪 Полный пример скрипта (api-test.sh)
 
 ```bash
@@ -148,27 +203,23 @@ curl -s -X GET "http://localhost:8080/api/admin/users" \
 echo "=== Получить все карты ==="
 curl -s -X GET "http://localhost:8080/api/admin/cards" \
   -H "Authorization: Bearer $TOKEN" | jq '.'
-
 ```
 
-> ⚠️ Требуется jq для красивого вывода JSON:
-
-Установка: sudo apt install jq (Linux) / brew install jq (macOS)
-
+> ⚠️ Требуется `jq` для красивого вывода JSON:
+>
+> Установка: `sudo apt install jq` (Linux) / `brew install jq` (macOS)
 
 ## ✅ Как использовать
 
-Сохраните команды в файл `api-examples.sh`
-
-Сделайте исполняемым:
-```bash
-chmod +x api-examples.sh
-```
-
-Запустите:
-```bash
-./api-examples.sh
-```
+- Сохраните команды в файл `api-examples.sh`
+- Сделайте исполняемым:
+  ```bash
+  chmod +x api-examples.sh
+  ```
+- Запустите:
+  ```bash
+  ./api-examples.sh
+  ```
 
 ## 📌 Примечания
 
