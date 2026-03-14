@@ -62,12 +62,7 @@ curl -X POST http://localhost:8080/api/cards/1/block \
 curl -X POST http://localhost:8080/api/cards/1/activate \
   -H "Authorization: Bearer $TOKEN"
 ```
-**Удалить карту**
 
-```bash
-curl -X DELETE http://localhost:8080/api/cards/1 \
-  -H "Authorization: Bearer $TOKEN"
-```
 **Перевод средств между своими картами**
 
 ```bash
