@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -155,17 +156,20 @@ public class CardService {
                 .orElseThrow(() -> new CardException("Карта не найдена"));
     }
 
-    private CardDto toDto(Card card) {
-        CardDto dto = new CardDto();
-        dto.setId(card.getId());
-        dto.setMaskedCardNumber(cardUtil.mask(card.getCardNumber()));
-        dto.setCardHolderName(card.getCardHolderName());
-        dto.setExpiryDate(card.getExpiryDate() != null ? YearMonth.from(card.getExpiryDate()) : null);
-        dto.setStatus(card.getStatus());
-        dto.setBalance(card.getBalance());
-        dto.setUserId(card.getUser().getId());
-        return dto;
-    }
+    public CardDto toDto(Card card) {
+    CardDto dto = new CardDto();
+    dto.setId(card.getId());
+    dto.setMaskedCardNumber(this.cardUtil.mask(card.getCardNumber())); // ✅ Исправлено
+    dto.setCardHolderName(card.getCardHolderName());
+    
+    // Конвертируем LocalDate → YearMonth
+    dto.setExpiryDate(YearMonth.from(card.getExpiryDate()));
+    
+    dto.setStatus(card.getStatus());
+    dto.setBalance(card.getBalance());
+    dto.setUserId(card.getUser().getId());
+    return dto;
+}
 
     private void checkAccess(Card card, User user) {
         if (!card.getUser().getId().equals(user.getId()) && !Role.ADMIN.equals(user.getRole())) {
