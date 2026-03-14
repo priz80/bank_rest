@@ -28,7 +28,7 @@ TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.x..."
 ```bash
 TOKEN="ваш_jwt_токен_из_ответа_выше"
 ```
-**Получить свои карты (с пагинацией)**
+**Получить все карты авторизированного пользователя (с пагинацией)**
 
 ```bash
 curl -X GET "http://localhost:8080/api/cards?page=0&size=10&sort=id,asc" \
