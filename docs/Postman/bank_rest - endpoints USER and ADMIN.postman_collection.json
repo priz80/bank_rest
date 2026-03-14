@@ -1,0 +1,230 @@
+{
+  "info": {
+    "_postman_id": "2682425e-588c-4de6-9391-09abf01a5f6d",
+    "name": "bank_rest - endpoints USER and ADMIN",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26739127"
+  },
+  "item": [
+    {
+      "name": "/api/cards",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/cards?page=0&size=10&sort=id,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "cards"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0",
+              "type": "text",
+              "id": 0,
+              "sortOrder": 0
+            },
+            {
+              "key": "size",
+              "value": "10",
+              "type": "text",
+              "id": 1,
+              "sortOrder": 1
+            },
+            {
+              "key": "sort",
+              "value": "id,asc",
+              "type": "text",
+              "id": 2,
+              "sortOrder": 2
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/cards/{id}",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzQ0MTU2MiwiZXhwIjoxNzczNTI3OTYyfQ.UGZDrgcj49cggak9CRzglHPTC9A2Vk_Ax6hsXEfA-lOEhWxRQDCGhTRFwhBKJLBV2v-dmo27eGJxKpt0IIrPBw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/cards/{id}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "cards",
+            "{id}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/cards/{id}/block",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/cards/{id}/block",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "cards",
+            "{id}",
+            "block"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/cards/{id}/activate",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/cards/{id}/activate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "cards",
+            "{id}",
+            "activate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/auth/login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"string\",\r\n    \"password\": \"string\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/cards/transfers",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"fromCardId\": 0,\r\n  \"toCardId\": 0,\r\n  \"amount\": 0.00\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/cards/transfers",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "cards",
+            "transfers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/cards",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzQ4MDcxOCwiZXhwIjoxNzczNTY3MTE4fQ.E1RNMFH3YilBwfQ60tA6eLnhUuIyNDXwKu7AYZDZxp6K8RONrxVY__R6VCLbC0FIHfqrjcG0CSywkHhpI_5WKw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/cards",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "cards"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
