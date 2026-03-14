@@ -1,0 +1,413 @@
+{
+  "info": {
+    "_postman_id": "90d1841a-1de4-4a7d-8157-6b17e6351b02",
+    "name": "bank_rest - endpoints ADMIN",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26739127"
+  },
+  "item": [
+    {
+      "name": "/api/auth/login - include auth ADMIN",
+      "request": {
+        "auth": {
+          "type": "inherit"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/users",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/users?page=0&size=10&sort=id,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "users"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0",
+              "type": "text",
+              "id": 0,
+              "sortOrder": 0
+            },
+            {
+              "key": "size",
+              "value": "10",
+              "type": "text",
+              "id": 1,
+              "sortOrder": 1
+            },
+            {
+              "key": "sort",
+              "value": "id,asc",
+              "type": "text",
+              "id": 2,
+              "sortOrder": 2
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/users/{id}",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/users/{id}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "users",
+            "{id}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/users",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/users?username=&password=",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "users"
+          ],
+          "query": [
+            {
+              "key": "username",
+              "value": "",
+              "type": "text",
+              "id": 0
+            },
+            {
+              "key": "password",
+              "value": "",
+              "type": "text",
+              "id": 1
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/users/{id}/status",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/users/{id}/status",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "users",
+            "{id}",
+            "status"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "ACTIVE",
+              "type": "text",
+              "id": 0,
+              "sortOrder": 0,
+              "disabled": true
+            },
+            {
+              "key": "status",
+              "value": "BLOCKED",
+              "type": "text",
+              "id": 1,
+              "sortOrder": 1,
+              "disabled": true
+            },
+            {
+              "key": "status",
+              "value": "DELETED",
+              "type": "text",
+              "id": 2,
+              "sortOrder": 2,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/users/{id}",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/users/{id}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "users",
+            "{id}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards?page=0&size=10&sort=id,asc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0",
+              "type": "text",
+              "id": 0,
+              "sortOrder": 0
+            },
+            {
+              "key": "size",
+              "value": "10",
+              "type": "text",
+              "id": 1,
+              "sortOrder": 1
+            },
+            {
+              "key": "sort",
+              "value": "id,asc",
+              "type": "text",
+              "id": 2,
+              "sortOrder": 2
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards/{id}/block",
+      "request": {
+        "auth": {
+          "type": "inherit"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards/{id}/block",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards",
+            "{id}",
+            "block"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards/{id}/activate",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards/{id}/activate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards",
+            "{id}",
+            "activate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards/transfers",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"fromCardId\": 0,\r\n  \"toCardId\": 0,\r\n  \"amount\": 0.00\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards/transfers",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards",
+            "transfers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards/{id}",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards/{id}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards",
+            "{id}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards/{id}",
+      "request": {
+        "auth": {
+          "type": "inherit"
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards/{id}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards",
+            "{id}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
