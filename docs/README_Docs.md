@@ -45,7 +45,7 @@
 {
   "username": "string",
   "password": "string"
-}****
+}
 ```
 
 **Ответ (200 OK)**
