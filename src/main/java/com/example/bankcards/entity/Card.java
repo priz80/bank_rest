@@ -8,6 +8,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
+import com.example.bankcards.converter.CardAttributeConverter;
+import jakarta.persistence.Convert;
+
 @Entity
 @Table(name = "cards")
 @Getter
@@ -20,7 +23,8 @@ public class Card {
     private Long id;
 
     @Column(name = "card_number", nullable = false, unique = true)
-    private String cardNumber;
+    @Convert(converter = CardAttributeConverter.class)
+    private String cardNumber; // будет шифроваться/расшифровываться автоматически
 
     @Column(name = "card_holder_name", nullable = false)
     private String cardHolderName;
