@@ -94,17 +94,6 @@ public class CardService {
         return toDto(cardRepository.save(card));
     }
 
-    public void deleteCard(Long id, User user) {
-        Card card = getCardEntityById(id);
-        checkAccess(card, user);
-
-        if (card.getStatus() == CardStatus.ACTIVE) {
-            throw new CardException("Нельзя удалить активную карту");
-        }
-
-        cardRepository.delete(card);
-    }
-
     public CardDto getCardById(Long id) {
         Card card = getCardEntityById(id);
         return toDto(card);
