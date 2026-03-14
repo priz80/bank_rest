@@ -25,7 +25,7 @@ Backend-приложение на Java (Spring Boot 3) для управлени
 - Полный доступ ко всем картам системы
 - Управление пользователями: создание, блокировка, удаление
 - Просмотр всех пользователей и их карт
-- Изменение статусов
+- Изменение статусов и удаление
 
 ---
 
@@ -73,7 +73,7 @@ Backend-приложение на Java (Spring Boot 3) для управлени
 #### Авторизация
 - `POST /api/auth/login` — Получение JWT токена
 
-#### Карты (USER)
+#### Карты (USER, ADMIN)
 - `GET /api/cards` — Получить свои карты (с пагинацией: `page`, `size`, `sort`)
 - `POST /api/cards` — Создать новую карту (автогенерация номера, CVV, срока)
 - `GET /api/cards/{id}` — Получить карту по ID
@@ -81,13 +81,21 @@ Backend-приложение на Java (Spring Boot 3) для управлени
 - `POST /api/cards/{id}/activate` — Активировать карту
 - `POST /api/cards/transfers` — Перевод средств между своими картами
 
-#### Администрирование (ADMIN)
+#### Администрирование пользователей (ADMIN)
 - `GET /api/admin/users` — Все пользователи (пагинация, сортировка)
 - `GET /api/admin/users/{id}` — Пользователь по ID
 - `POST /api/admin/users` — Создать пользователя
 - `PUT /api/admin/users/{id}/status` — Изменить статус пользователя
 - `DELETE /api/admin/users/{id}` — Удалить пользователя (только если DELETED и нет карт)
+
+#### Администрирование карт (ADMIN)
 - `GET /api/admin/cards` — Все карты в системе
+- `POST /api/admin/cards` — Создать новую карту
+- `POST /api/admin/cards/{id}/block` — Заблокировать карту
+- `POST /api/admin/cards/{id}/activate` — Активировать карту
+- `POST /api/admin/cards/transfers` — Перевод средств между картами
+- `GET /api/admin/cards/{id}` — Карта по ID
+- `DELETE /api/admin/cards/{id}` — Удалить карту
 
 ---
 
@@ -96,15 +104,15 @@ Backend-приложение на Java (Spring Boot 3) для управлени
 Проект соответствует классической многослойной архитектуре:
 
 ```
-src/main/java/com/example/bankcards/
-├── controller/       → Обработка HTTP-запросов
-├── service/          → Бизнес-логика
-├── repository/       → Работа с БД
-├── entity/           → JPA-сущности
-├── dto/              → Объекты передачи данных
-├── security/         → JWT, аутентификация
-├── util/             → Шифрование, генерация карт
-└── config/           → Настройки Spring
+src/main/java/com/example/bank_rest/
+├── controller/       → Обработка HTTP-запросов (AdminCardController, AdminUserController, AuthController, CardController)
+├── service/          → Бизнес-логика (CardService, TransferService, UserService)
+├── repository/       → Работа с БД (CardRepository, UserRepository)
+├── entity/           → JPA-сущности (Card, User, Role)
+├── dto/              → Объекты передачи данных (CardDto, UserDto, Request/Response объекты)
+├── security/         → JWT, аутентификация (JwtFilter, JwtUtil, UserDetailsImpl)
+├── util/             → Шифрование, генерация карт (CardGenerator, CardUtil)
+└── config/           → Настройки Spring (SecurityConfig, OpenApi3Config, AdminUserInit)
 ```
 
 ---
@@ -112,17 +120,18 @@ src/main/java/com/example/bankcards/
 ## 📁 Структура проекта
 
 ```
-bankcards/
+bank_rest/
 ├── src/
 │   ├── main/
 │   │   ├── java/
 │   │   ├── resources/
 │   │   │   ├── application.yml
-│   │   │   └── db/changelog/        → Liquibase миграции
+│   │   │   └── db/migration/        → Liquibase миграции (001_create_user_table.xml, 002_create_card_table.xml)
 │   ├── test/
 ├── docker-compose.yml               → Запуск PostgreSQL + приложение
 ├── pom.xml                          → Maven-зависимости
-├── README.md                        → Инструкция по запуску
+├── README.md                        → ТЗ
+├── README_Bank_rest.md              → Инструкция по запуску
 └── docs/
     ├── openapi.yaml                 → OpenAPI спецификация
     └── API.md                       → Полная документация API
