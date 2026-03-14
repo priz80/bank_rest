@@ -274,10 +274,100 @@
       "response": []
     },
     {
+      "name": "/api/admin/cards/{id}",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards/{id}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards",
+            "{id}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards?userId=",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "",
+              "id": 0
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/api/admin/cards/transfers",
+      "request": {
+        "auth": {
+          "type": "bearer"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"fromCardId\": 0,\r\n  \"toCardId\": 0,\r\n  \"amount\": 0.00\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/admin/cards/transfers",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "admin",
+            "cards",
+            "transfers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "/api/admin/cards/{id}/block",
       "request": {
         "auth": {
-          "type": "inherit"
+          "type": "bearer"
         },
         "method": "POST",
         "header": [],
@@ -326,74 +416,15 @@
       "response": []
     },
     {
-      "name": "/api/admin/cards/transfers",
-      "request": {
-        "auth": {
-          "type": "bearer"
-        },
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"fromCardId\": 0,\r\n  \"toCardId\": 0,\r\n  \"amount\": 0.00\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:8080/api/admin/cards/transfers",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "admin",
-            "cards",
-            "transfers"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "/api/admin/cards/{id}",
       "request": {
         "auth": {
           "type": "bearer"
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8080/api/admin/cards/{id}",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "api",
-            "admin",
-            "cards",
-            "{id}"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "/api/admin/cards/{id}",
-      "request": {
-        "auth": {
-          "type": "inherit"
         },
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:8080/api/admin/cards/{id}",
+          "raw": "http://localhost:8080/api/admin/cards/14",
           "protocol": "http",
           "host": [
             "localhost"
@@ -403,7 +434,7 @@
             "api",
             "admin",
             "cards",
-            "{id}"
+            "14"
           ]
         }
       },
