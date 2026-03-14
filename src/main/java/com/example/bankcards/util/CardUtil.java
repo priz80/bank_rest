@@ -26,6 +26,7 @@ public class CardUtil {
     }
 
     public String encrypt(String cardNumber) {
+        if (cardNumber == null) return null;
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, key);
@@ -37,6 +38,7 @@ public class CardUtil {
     }
 
     public String decrypt(String encryptedCardNumber) {
+        if (encryptedCardNumber == null) return null;
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, key);
