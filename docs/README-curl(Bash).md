@@ -40,9 +40,7 @@ curl -X GET "http://localhost:8080/api/cards?page=0&size=10&sort=id,asc" \
 curl -X POST http://localhost:8080/api/cards \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "userId": 1
-  }'
+  -d '{}'
 ```
 **Получить карту по ID**
 
