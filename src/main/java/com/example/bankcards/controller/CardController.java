@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Cadrs Controller")
+@Tag(name = "Cards Controller")
 @RestController
 @RequestMapping("/api/cards")
 @PreAuthorize("hasRole('USER')")
@@ -39,15 +39,7 @@ public class CardController {
         User user = getUserFromAuth(authentication);
         Page<CardDto> cards = cardService.getCardsByUser(user, pageable);
         return ResponseEntity.ok(cards);
-    }
-
-    // @DeleteMapping("/{id}")
-    // public ResponseEntity<Void> deleteCard(@PathVariable Long id, Authentication authentication) {
-    //     User user = getUserFromAuth(authentication);
-    //     cardService.deleteCard(id, user);
-    //     return ResponseEntity.noContent().build();
-    // }
-    
+    }    
 
     @PostMapping
     public ResponseEntity<CardDto> createCard(Authentication authentication) {
