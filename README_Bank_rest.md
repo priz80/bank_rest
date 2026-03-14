@@ -79,7 +79,6 @@ Backend-приложение на Java (Spring Boot 3) для управлени
 - `GET /api/cards/{id}` — Получить карту по ID
 - `POST /api/cards/{id}/block` — Заблокировать карту
 - `POST /api/cards/{id}/activate` — Активировать карту
-- `DELETE /api/cards/{id}` — Удалить карту (если не активна и баланс = 0)
 - `POST /api/cards/transfers` — Перевод средств между своими картами
 
 #### Администрирование (ADMIN)
