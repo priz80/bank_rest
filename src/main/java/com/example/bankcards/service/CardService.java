@@ -27,9 +27,9 @@ public class CardService {
     private final CardGenerator cardGenerator;
 
     public CardService(CardRepository cardRepository,
-                       UserRepository userRepository,
-                       CardUtil cardUtil,
-                       CardGenerator cardGenerator) {
+            UserRepository userRepository,
+            CardUtil cardUtil,
+            CardGenerator cardGenerator) {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
         this.cardUtil = cardUtil;
@@ -58,9 +58,7 @@ public class CardService {
     }
 
     public Page<CardDto> getCardsByUser(User user, Pageable pageable) {
-        Page<Card> cards = Role.ADMIN.equals(user.getRole())
-                ? cardRepository.findAll(pageable)
-                : cardRepository.findByUser(user, pageable);
+        Page<Card> cards = cardRepository.findByUser(user, pageable);
         return cards.map(this::toDto);
     }
 
