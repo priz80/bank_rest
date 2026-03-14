@@ -41,12 +41,12 @@ public class CardController {
         return ResponseEntity.ok(cards);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCard(@PathVariable Long id, Authentication authentication) {
-        User user = getUserFromAuth(authentication);
-        cardService.deleteCard(id, user);
-        return ResponseEntity.noContent().build();
-    }
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<Void> deleteCard(@PathVariable Long id, Authentication authentication) {
+    //     User user = getUserFromAuth(authentication);
+    //     cardService.deleteCard(id, user);
+    //     return ResponseEntity.noContent().build();
+    // }
 
     @PostMapping
     public ResponseEntity<CardDto> createCard(Authentication authentication) {
