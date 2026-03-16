@@ -42,8 +42,8 @@ class TransferServiceTest {
         receiverCard.setId(2L);
         receiverCard.setBalance(BigDecimal.valueOf(100.0));
 
-        // Мокируем save()
-        when(cardRepository.save(any(Card.class)))
+        // ✅ lenient() — чтобы избежать UnnecessaryStubbingException
+        Mockito.lenient().when(cardRepository.save(any(Card.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
@@ -71,9 +71,10 @@ class TransferServiceTest {
         request.setAmount(BigDecimal.valueOf(1000.0));
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(senderCard));
+        when(cardRepository.findById(2L)).thenReturn(Optional.of(receiverCard)); // ✅
 
         assertThatThrownBy(() -> transferService.transfer(request, senderCard.getUser()))
-                .isInstanceOf(InsufficientFundsException.class) // ✅ Исправлено
+                .isInstanceOf(InsufficientFundsException.class)
                 .hasMessage("Недостаточно средств на карте");
     }
 
@@ -88,6 +89,7 @@ class TransferServiceTest {
         otherUser.setId(999L);
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(senderCard));
+        // ❗ receiverCard не нужен — ошибка доходит до проверки владельца
 
         assertThatThrownBy(() -> transferService.transfer(request, otherUser))
                 .isInstanceOf(SecurityException.class)
@@ -104,7 +106,7 @@ class TransferServiceTest {
         when(cardRepository.findById(1L)).thenReturn(Optional.of(senderCard));
         when(cardRepository.findById(2L)).thenReturn(Optional.of(receiverCard));
 
-        transferService.transfer(request); // Админ
+        transferService.transfer(request);
 
         assertThat(senderCard.getBalance()).isEqualTo(BigDecimal.valueOf(300.0));
         assertThat(receiverCard.getBalance()).isEqualTo(BigDecimal.valueOf(300.0));
