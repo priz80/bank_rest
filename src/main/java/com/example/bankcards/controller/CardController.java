@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "Cards Controller")
 @RestController
@@ -70,7 +71,7 @@ public class CardController {
     }
 
     @PostMapping("/transfers")
-    public ResponseEntity<Void> transfer(@RequestBody TransferRequest request, Authentication authentication) {
+    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferRequest request, Authentication authentication) {
         User user = getUserFromAuth(authentication);
         transferService.transfer(request, user);
         return ResponseEntity.ok().build();
