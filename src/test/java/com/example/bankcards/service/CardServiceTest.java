@@ -5,13 +5,14 @@ import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.exception.EntityNotFoundException; // ✅ Теперь есть
+import com.example.bankcards.exception.CardException;
 import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.util.CardUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,11 +21,14 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class) // ✅ Импорт добавлен
+@ExtendWith(MockitoExtension.class)
 class CardServiceTest {
 
     @Mock
     private CardRepository cardRepository;
+
+    @Mock
+    private CardUtil cardUtil;
 
     @InjectMocks
     private CardService cardService;
@@ -46,6 +50,9 @@ class CardServiceTest {
         card.setStatus(CardStatus.ACTIVE);
         card.setBalance(BigDecimal.valueOf(1000.0));
         card.setUser(user);
+
+        // ✅ Используем lenient() — чтобы избежать UnnecessaryStubbingException
+        Mockito.lenient().when(cardUtil.mask(anyString())).thenReturn("**** **** **** 1111");
     }
 
     @Test
@@ -64,8 +71,10 @@ class CardServiceTest {
         when(cardRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> cardService.getCardById(999L))
-                .isInstanceOf(EntityNotFoundException.class)
+                .isInstanceOf(CardException.class)
                 .hasMessage("Карта не найдена");
+
+        // Не использует cardUtil → но lenient() спасает
     }
 
     @Test
