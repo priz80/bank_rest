@@ -1,92 +1,66 @@
+// src/main/java/com/example/bankcards/service/TransferService.java
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.TransferRequest;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.exception.CardException;
+import com.example.bankcards.exception.InsufficientFundsException;
 import com.example.bankcards.repository.CardRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.bankcards.exception.TransferException;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 @Service
 @Transactional
 public class TransferService {
 
-    private final CardRepository cardRepository;
+    @Autowired
+    private CardRepository cardRepository;
 
-    public TransferService(CardRepository cardRepository) {
-        this.cardRepository = cardRepository;
-    }
-
-    public void transfer(TransferRequest request) {
-        Card fromCard = cardRepository.findById(request.getFromCardId())
-                .orElseThrow(() -> new TransferException("Исходящая карта не найдена"));
-
-        Card toCard = cardRepository.findById(request.getToCardId())
-                .orElseThrow(() -> new TransferException("Входящая карта не найдена"));
-
-        if (fromCard.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new TransferException("Недостаточно средств на карте отправителя");
-        }
-
-        fromCard.setBalance(fromCard.getBalance().subtract(request.getAmount()));
-        toCard.setBalance(toCard.getBalance().add(request.getAmount()));
-
-        cardRepository.save(fromCard);
-        cardRepository.save(toCard);
-    }
-
+    /**
+     * Перевод от имени пользователя.
+     * Проверяет, что отправитель — владелец карты.
+     */
     public void transfer(TransferRequest request, User user) {
-        if (request == null) {
-            throw new CardException("Запрос на перевод не может быть пустым");
+        Card senderCard = cardRepository.findById(request.getFromCardId())
+                .orElseThrow(() -> new IllegalArgumentException("Карта отправителя не найдена"));
+
+        // Проверка: пользователь — владелец карты
+        if (!senderCard.getUser().getId().equals(user.getId())) {
+            throw new SecurityException("Вы не можете переводить с чужой карты");
         }
 
-        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new CardException("Сумма перевода должна быть больше нуля");
+        performTransfer(senderCard, request.getToCardId(), request.getAmount());
+    }
+
+    /**
+     * Перевод от имени администратора.
+     * Никаких проверок владельца — админ может переводить с любой карты.
+     */
+    public void transfer(TransferRequest request) {
+        Card senderCard = cardRepository.findById(request.getFromCardId())
+                .orElseThrow(() -> new IllegalArgumentException("Карта отправителя не найдена"));
+
+        performTransfer(senderCard, request.getToCardId(), request.getAmount());
+    }
+
+    /**
+     * Выполняет сам перевод: списание и зачисление.
+     */
+    private void performTransfer(Card senderCard, Long toCardId, BigDecimal amount) {
+        Card receiverCard = cardRepository.findById(toCardId)
+                .orElseThrow(() -> new IllegalArgumentException("Карта получателя не найдена"));
+
+        if (senderCard.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Недостаточно средств на карте");
         }
 
-        if (request.getFromCardId() == null) {
-            throw new CardException("ID карты отправителя не может быть пустым");
-        }
-        if (request.getToCardId() == null) {
-            throw new CardException("ID карты получателя не может быть пустым");
-        }
+        senderCard.setBalance(senderCard.getBalance().subtract(amount));
+        receiverCard.setBalance(receiverCard.getBalance().add(amount));
 
-        if (request.getFromCardId().equals(request.getToCardId())) {
-            throw new CardException("Нельзя перевести деньги на ту же карту");
-        }
-
-        Card fromCard = cardRepository.findById(request.getFromCardId())
-                .orElseThrow(() -> new CardException("Карта отправителя не найдена"));
-
-        Card toCard = cardRepository.findById(request.getToCardId())
-                .orElseThrow(() -> new CardException("Карта получателя не найдена"));
-
-        if (!Objects.equals(fromCard.getUser().getId(), user.getId()) ||
-            !Objects.equals(toCard.getUser().getId(), user.getId())) {
-            throw new CardException("Обе карты должны принадлежать текущему пользователю");
-        }
-
-        if (fromCard.getStatus() != CardStatus.ACTIVE) {
-            throw new CardException("Карта отправителя не активна");
-        }
-        if (toCard.getStatus() != CardStatus.ACTIVE) {
-            throw new CardException("Карта получателя не активна");
-        }
-
-        if (fromCard.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new CardException("Недостаточно средств на карте");
-        }
-
-        fromCard.setBalance(fromCard.getBalance().subtract(request.getAmount()));
-        toCard.setBalance(toCard.getBalance().add(request.getAmount()));
-
-        cardRepository.save(fromCard);
-        cardRepository.save(toCard);
+        cardRepository.save(senderCard);
+        cardRepository.save(receiverCard);
     }
 }
