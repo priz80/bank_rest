@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "Admin Cards Controller")
 @RestController
@@ -76,7 +77,7 @@ public class AdminCardController {
 
     // Перевод средств (админ может переводить с любой на любую)
     @PostMapping("/cards/transfers")
-    public ResponseEntity<Void> transfer(@RequestBody TransferRequest request) {
+    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferRequest request) {
         transferService.transfer(request);
         return ResponseEntity.ok().build();
     }
