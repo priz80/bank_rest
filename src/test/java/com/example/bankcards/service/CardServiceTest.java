@@ -1,4 +1,3 @@
-// src/test/java/com/example/bankcards/service/CardServiceTest.java
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.CardDto;
