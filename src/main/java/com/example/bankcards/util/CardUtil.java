@@ -20,7 +20,7 @@ public class CardUtil {
             throw new IllegalArgumentException("Ключ шифрования должен быть не менее 32 символов");
         }
         byte[] keyBytes = encryptionKey.getBytes(StandardCharsets.UTF_8);
-        byte[] truncatedKey = new byte[32]; // AES-256: 32 байта
+        byte[] truncatedKey = new byte[32];
         System.arraycopy(keyBytes, 0, truncatedKey, 0, truncatedKey.length);
         this.key = new SecretKeySpec(truncatedKey, ALGORITHM);
     }

@@ -1,4 +1,3 @@
-// src/main/java/com/example/bankcards/service/TransferService.java
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.TransferRequest;
@@ -19,15 +18,10 @@ public class TransferService {
     @Autowired
     private CardRepository cardRepository;
 
-    /**
-     * Перевод от имени пользователя.
-     * Проверяет, что отправитель — владелец карты.
-     */
     public void transfer(TransferRequest request, User user) {
         Card senderCard = cardRepository.findById(request.getFromCardId())
                 .orElseThrow(() -> new IllegalArgumentException("Карта отправителя не найдена"));
 
-        // Проверка: пользователь — владелец карты
         if (!senderCard.getUser().getId().equals(user.getId())) {
             throw new SecurityException("Вы не можете переводить с чужой карты");
         }
@@ -35,10 +29,6 @@ public class TransferService {
         performTransfer(senderCard, request.getToCardId(), request.getAmount());
     }
 
-    /**
-     * Перевод от имени администратора.
-     * Никаких проверок владельца — админ может переводить с любой карты.
-     */
     public void transfer(TransferRequest request) {
         Card senderCard = cardRepository.findById(request.getFromCardId())
                 .orElseThrow(() -> new IllegalArgumentException("Карта отправителя не найдена"));
@@ -46,9 +36,6 @@ public class TransferService {
         performTransfer(senderCard, request.getToCardId(), request.getAmount());
     }
 
-    /**
-     * Выполняет сам перевод: списание и зачисление.
-     */
     private void performTransfer(Card senderCard, Long toCardId, BigDecimal amount) {
         Card receiverCard = cardRepository.findById(toCardId)
                 .orElseThrow(() -> new IllegalArgumentException("Карта получателя не найдена"));

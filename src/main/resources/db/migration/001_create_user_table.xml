@@ -27,7 +27,6 @@
             <column name="username"/>
         </createIndex>
 
-        <!-- Опционально: индекс по статусу -->
         <createIndex tableName="users" indexName="idx_user_status">
             <column name="status"/>
         </createIndex>

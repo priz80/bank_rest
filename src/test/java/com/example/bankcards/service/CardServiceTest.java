@@ -50,8 +50,7 @@ class CardServiceTest {
         card.setBalance(BigDecimal.valueOf(1000.0));
         card.setUser(user);
 
-        // ✅ Используем lenient() — чтобы избежать UnnecessaryStubbingException
-        Mockito.lenient().when(cardUtil.mask(anyString())).thenReturn("**** **** **** 1111");
+         Mockito.lenient().when(cardUtil.mask(anyString())).thenReturn("**** **** **** 1111");
     }
 
     @Test
@@ -72,8 +71,6 @@ class CardServiceTest {
         assertThatThrownBy(() -> cardService.getCardById(999L))
                 .isInstanceOf(CardException.class)
                 .hasMessage("Карта не найдена");
-
-        // Не использует cardUtil → но lenient() спасает
     }
 
     @Test

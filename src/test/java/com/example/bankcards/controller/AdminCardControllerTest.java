@@ -1,4 +1,3 @@
-// src/test/java/com/example/bankcards/controller/AdminCardControllerTest.java
 package com.example.bankcards.controller;
 
 import com.example.bankcards.config.SecurityConfig;
@@ -19,7 +18,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -76,7 +74,7 @@ class AdminCardControllerTest {
         when(customUserDetailsService.loadUserByUsername("admin")).thenReturn(userDetails);
         when(cardService.getAllCards(any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/admin/cards")  // ✅ Исправлено: добавлен /
+        mockMvc.perform(get("/api/admin/cards")
                         .header("Authorization", "Bearer mock-token")
                         .param("page", "0")
                         .param("size", "10"))
@@ -99,7 +97,7 @@ class AdminCardControllerTest {
         when(jwtUtil.validateToken("mock-token", "admin")).thenReturn(true);
         when(customUserDetailsService.loadUserByUsername("admin")).thenReturn(userDetails);
 
-        mockMvc.perform(post("/api/admin/cards/1/block")  // ✅ POST + /api/
+        mockMvc.perform(post("/api/admin/cards/1/block")
                         .header("Authorization", "Bearer mock-token"))
                 .andExpect(status().isOk());
 

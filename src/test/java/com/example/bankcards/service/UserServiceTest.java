@@ -1,4 +1,3 @@
-// src/test/java/com/example/bankcards/service/UserServiceTest.java
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.UserDto;
@@ -62,7 +61,7 @@ class UserServiceTest {
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserById(999L))
-                .isInstanceOf(UserException.class) // ✅ Исправлено
+                .isInstanceOf(UserException.class)
                 .hasMessage("Пользователь не найден с ID: 999");
     }
 
@@ -74,7 +73,7 @@ class UserServiceTest {
         User updated = userService.updateUserStatus(1L, User.Status.BLOCKED);
 
         assertThat(updated.getStatus()).isEqualTo(User.Status.BLOCKED);
-        verify(userRepository).save(user); // ✅ Проверка вызова
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -89,7 +88,7 @@ class UserServiceTest {
 
     @Test
     void getAllUsers_Pageable_ReturnsPage() {
-        // Используем PageImpl — настоящий класс Spring Data
+
         Page<User> userPage = new PageImpl<>(List.of(user), PageRequest.of(0, 10), 1);
 
         when(userRepository.findAll(any(Pageable.class))).thenReturn(userPage);

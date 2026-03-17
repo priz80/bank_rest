@@ -24,7 +24,7 @@ public class Card {
 
     @Column(name = "card_number", nullable = false, unique = true)
     @Convert(converter = CardAttributeConverter.class)
-    private String cardNumber; // будет шифроваться/расшифровываться автоматически
+    private String cardNumber;
 
     @Column(name = "card_holder_name", nullable = false)
     private String cardHolderName;

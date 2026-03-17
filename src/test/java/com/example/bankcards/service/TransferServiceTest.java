@@ -1,4 +1,3 @@
-// src/test/java/com/example/bankcards/service/TransferServiceTest.java
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.TransferRequest;
@@ -42,7 +41,6 @@ class TransferServiceTest {
         receiverCard.setId(2L);
         receiverCard.setBalance(BigDecimal.valueOf(100.0));
 
-        // ✅ lenient() — чтобы избежать UnnecessaryStubbingException
         Mockito.lenient().when(cardRepository.save(any(Card.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
     }
@@ -71,7 +69,7 @@ class TransferServiceTest {
         request.setAmount(BigDecimal.valueOf(1000.0));
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(senderCard));
-        when(cardRepository.findById(2L)).thenReturn(Optional.of(receiverCard)); // ✅
+        when(cardRepository.findById(2L)).thenReturn(Optional.of(receiverCard));
 
         assertThatThrownBy(() -> transferService.transfer(request, senderCard.getUser()))
                 .isInstanceOf(InsufficientFundsException.class)
@@ -89,7 +87,6 @@ class TransferServiceTest {
         otherUser.setId(999L);
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(senderCard));
-        // ❗ receiverCard не нужен — ошибка доходит до проверки владельца
 
         assertThatThrownBy(() -> transferService.transfer(request, otherUser))
                 .isInstanceOf(SecurityException.class)

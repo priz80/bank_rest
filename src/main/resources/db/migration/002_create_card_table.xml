@@ -12,7 +12,7 @@
             <column name="card_number" type="VARCHAR(255)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <!-- Исправлено: card_holder_name вместо owner_name -->
+
             <column name="card_holder_name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -33,7 +33,6 @@
             </column>
         </createTable>
 
-        <!-- Внешний ключ на users -->
         <addForeignKeyConstraint
             baseTableName="cards"
             baseColumnNames="user_id"
@@ -42,7 +41,6 @@
             referencedColumnNames="id"
             onDelete="CASCADE"/>
 
-        <!-- Индексы -->
         <createIndex tableName="cards" indexName="idx_card_user">
             <column name="user_id"/>
         </createIndex>

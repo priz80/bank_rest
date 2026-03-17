@@ -57,12 +57,10 @@ class CardControllerTest {
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
 
-    // ✅ Добавлено: ObjectMapper
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void getMyCards_ValidUser_ReturnsCardList() throws Exception {
-        // Подготавливаем данные
         User user = new User();
         user.setId(1L);
         user.setUsername("user1");
@@ -159,6 +157,6 @@ class CardControllerTest {
                 .header("Authorization", "Bearer mock-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest()); // ✅ Теперь реально 400
+                .andExpect(status().isBadRequest());
     }
 }

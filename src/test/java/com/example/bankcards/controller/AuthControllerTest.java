@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfig.class)  // ✅ Ключевая строка — загружает SecurityConfig
+@Import(SecurityConfig.class)
 class AuthControllerTest {
 
     @Autowired
